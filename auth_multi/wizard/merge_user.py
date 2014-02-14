@@ -129,7 +129,7 @@ class merge_user_for_login(osv.TransientModel):
                 action='',
                 res_id=res_id, model='merge.user.for.login', context=context)[user.partner_id.id]
         model, action_id = self.pool.get('ir.model.data').get_object_reference(cr, uid,
-                                                                               'gmail_user_control',
+                                                                               'auth_multi',
                                                                                'validate_merge_action')
         
         base_url = self.pool.get('ir.config_parameter').get_param(cr, uid, 'web.base.url',
@@ -302,10 +302,10 @@ class merge_user_for_login(osv.TransientModel):
     def return_action(self, cr, uid, ids, context=None):
         context = context or {}
         model, action_id = self.pool.get('ir.model.data').get_object_reference(cr, uid,
-                                                                               'gmail_user_control',
+                                                                               'auth_multi',
                                                                                'show_message_in_merge_action')
         model, view_id = self.pool.get('ir.model.data').get_object_reference(cr, uid,
-                                                                               'gmail_user_control',
+                                                                               'auth_multi',
                                                                                'show_message_in_merge_view_form')
         return {                                                                                       
             'view_type': 'form',

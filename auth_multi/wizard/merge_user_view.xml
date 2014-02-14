@@ -221,7 +221,7 @@
             view_type="form"                                                       
             view_mode="form"                                                       
             view_id="mail_wizard_invite_view_form"
-            groups="gmail_user_control.group_gmail_token_manager"
+            groups="auth_multi.group_gmail_token_manager"
             target="new"                                                           
             id="do_merge_users"/> 
 
@@ -232,7 +232,7 @@
             view_type="form"                                                       
             view_mode="form"                                                       
             view_id="mail_wizard_change_field_view_form"
-            groups="gmail_user_control.group_gmail_token_manager"
+            groups="auth_multi.group_gmail_token_manager"
             target="new"                                                           
             id="do_merge_users_change"/> 
 

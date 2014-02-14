@@ -257,7 +257,7 @@ class res_users(osv.Model):
         context = context or {}
         context.update({'default_user_id':uid})
         model, action_id = self.pool.get('ir.model.data').get_object_reference(cr, uid,
-                                                                               'gmail_user_control',
+                                                                               'auth_multi',
                                                                                'search_user_merge_action')
         action = self.pool.get('ir.actions.act_window').read(cr, uid, action_id, [], context)
         action.update({'context':context})

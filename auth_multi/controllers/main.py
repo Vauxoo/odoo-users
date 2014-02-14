@@ -16,16 +16,15 @@ class auth_muti_login(openerpweb.Controller):
 
     @http.route(['/do_merge/execute_merge'], type='http', auth="user", website=True, multilang=True)
     def execute_merge(self, **post):
-        url = '?db=%s&login=%s&record=%s#action=%s' % (db, kw.get('login'),
-                                                       kw.get('record'),
-                                                       kw.get('action'))
-        req.context.update({'prueba':'otra'})
-        path = req.httprequest.url.split('/do_merge')
-        return set_cookie_and_redirect(req, url)
+        print 'post', post
+        url = '?db=%s&login=%s&record=%s#action=%s' % ('saas', post.get('login'),
+                                                       post.get('record'),
+                                                       post.get('action'))
+        query = {'redirect': u'/'}
+        return http.local_redirect('/web/login', query=query)
 
-    @openerpweb.httprequest
+    @http.route(['/do_merge/apply_merge'], type='http', auth="user", website=True, multilang=True)
     def apply_merge(self, req, server_action=None, db=None, **kw):
-        print 30*'algooooooooo'
         dbname = db
         context = {}
         context.update(kw)
