@@ -1,0 +1,220 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<openerp>
+  <data>
+    <record model="ir.ui.view" id="inherit_user_token_form_view">
+      <field name="name">User.Gmail.Tokens.View</field>
+      <field name="model">res.users</field>
+      <field name="inherit_id" ref="base.view_users_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//page[last()]" position="after">
+            <page string='Gmail Accounts'>
+                <field name="gmail_tokens" >
+                    <tree>
+                        <field name="name" />
+                        <field name="oauth_provider_id" invisible="1"/>
+                        <field name="oauth_uid" invisible="1"/>
+                        <field name="oauth_access_token" invisible="1"/>
+                    </tree>
+                </field>
+            </page>
+        </xpath>
+      </field>
+    </record>
+
+        <record id="base.view_users_form_simple_modif" model="ir.ui.view">
+            <field name="name">res.users.preferences.form</field>
+            <field name="model">res.users</field>
+            <field eval="18" name="priority"/>
+            <field name="arch" type="xml">
+            <form string="Users" version="7.0" class="bs3 bs3-form-bg bs3-footer">
+            <div class="container">
+                <div class="page-header nav nav-pills">
+                    <ul class="nav nav-pills">                                                          
+                      <li class='active'>                                                               
+                        <a data-toggle="tab" href="#main">                                 
+                            <span >Main Info</span>                                                      
+                        </a>                                                                            
+                      </li>                                                                             
+                      <li>                                                                              
+                          <a data-toggle="tab"
+                              groups='base.group_user'
+                              href="#partners">                                   
+                          <span >My Contacts</span>                                                          
+                        </a>                                                                            
+                      </li>                                                                             
+                      <li>                                                                              
+                        <a data-toggle="tab" invisible="1" groups="base.group_sale_salesman" href="#sales">                                      
+                          <span >Sales</span>                                                           
+                        </a>                                                                            
+                      </li>                                                                             
+                      <li>                                                                              
+                        <a data-toggle="tab" href="#logins">                                   
+                          <span >My Logins</span>                                                           
+                        </a>                                                                            
+                      </li>                                                                             
+                      <li>                                                                              
+                        <button name="preference_change_password"
+                                type="object"
+                                class="btn btn-primary btn-sm"
+                                string="Change password" />
+                      </li>                                                                             
+                      <li>                                                                              
+                        <button name="search_users_for_merge"
+                                type="object"
+                                class="btn btn-primary btn-sm"
+                                groups='base.group_user'
+                                string="Claim Users" />
+                      </li>                                                                             
+                    </ul>                                                                               
+                </div>
+            <div class="tab-content">                                                                   
+                <div id="main" class="tab-pane active">                                             
+                    <ul class="list-group">                                                             
+                        <div class="col-md-2" >
+                            <field name="image" widget='image' class="oe_avatar" />
+                        </div>
+                        <div class="col-md-8" >
+                        <h3>
+                            <field name="name" readonly="1" class="oe_inline"/>
+                            (<field name="login" readonly="1" class="oe_inline"/>)
+                        </h3>
+                            <label for="lang"  class="glyphicon glyphicon-info-sign oe_inline oe_inline" />
+                            <field name="lang"  nolabel="1" readonly="0"/>
+                            <label for="tz" class="glyphicon glyphicon-info-sign oe_inline" />
+                            <field name="tz" readonly="0"/>
+                            <label for="company_id" class="glyphicon glyphicon-info-sign oe_inline oe_inline"/>
+                            <field name="company_id" widget="selection" readonly="0"
+                                groups="base.group_multi_company" on_change="on_change_company_id(company_id)"/>
+                            <label for="email" class="glyphicon glyphicon-info-sign oe_inline oe_inline"/>
+                            <field name="email" widget="email" readonly="0"/>
+                            <label for="signature" class="glyphicon glyphicon-info-sign oe_inline oe_inline"/>
+                            <field name="signature" readonly="0"/>
+                        <footer>
+                            <button name="preference_save" type="object" string="Save"/>
+                            or
+                            <button name="preference_cancel" string="Cancel" special="cancel" class="oe_link"/>
+                        </footer>
+                        </div>
+                    </ul>                                                                               
+                </div>                                                                                  
+                <div id="partners" class="tab-pane">                                                        
+                    <ul class="list-group">                                                             
+                            <field name="my_contacts" mode="kanban">
+                                 <kanban>
+                                    <field name="color"/>
+                                    <field name="name"/>
+                                    <field name="title"/>
+                                    <field name="email"/>
+                                    <field name="parent_id"/>
+                                    <field name="is_company"/>
+                                    <field name="function"/>
+                                    <field name="phone"/>
+                                    <field name="street"/>
+                                    <field name="street2"/>
+                                    <field name="zip"/>
+                                    <field name="city"/>
+                                    <field name="country_id"/>
+                                    <field name="mobile"/>
+                                    <field name="fax"/>
+                                    <field name="state_id"/>
+                                    <field name="has_image"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <t t-set="color" t-value="kanban_color(record.color.raw_value)"/>
+                                            <div t-att-class="color + (record.title.raw_value == 1 ? ' oe_kanban_color_alert' : '')" style="position: relative">
+                                                <a t-if="! read_only_mode" type="delete" style="position: absolute; right: 0; padding: 4px; diplay: inline-block">X</a>
+                                                <div class="oe_module_vignette">
+                                                <a type="open">
+                                                    <t t-if="record.has_image.raw_value === true">
+                                                        <img t-att-src="kanban_image('res.partner', 'image', record.id.value, {'preview_image': 'image_small'})" class="oe_avatar oe_kanban_avatar_smallbox"/>
+                                                    </t>
+                                                    <t t-if="record.image and record.image.raw_value !== false">
+                                                        <img t-att-src="'data:image/png;base64,'+record.image.raw_value" class="oe_avatar oe_kanban_avatar_smallbox"/>
+                                                    </t>
+                                                    <t t-if="record.has_image.raw_value === false and (!record.image or record.image.raw_value === false)">
+                                                        <t t-if="record.is_company.raw_value === true">
+                                                            <img t-att-src="_s + &quot;/base/static/src/img/company_image.png&quot;" class="oe_kanban_image oe_kanban_avatar_smallbox"/>
+                                                        </t>
+                                                        <t t-if="record.is_company.raw_value === false">
+                                                            <img t-att-src="_s + &quot;/base/static/src/img/avatar.png&quot;" class="oe_kanban_image oe_kanban_avatar_smallbox"/>
+                                                        </t>
+                                                    </t>
+                                                </a>
+                                                    <div class="oe_module_desc">
+                                                        <div class="oe_kanban_box_content oe_kanban_color_bglight oe_kanban_color_border">
+                                                            <table class="oe_kanban_table">
+                                                                <tr>
+                                                                    <td class="oe_kanban_title1" align="left" valign="middle">
+                                                                        <h4><a type="open"><field name="name"/></a></h4>
+                                                                        <i><div t-if="record.function.raw_value">
+                                                                            <field name="function"/></div></i>
+                                                                        <div><a t-if="record.email.raw_value" title="Mail" t-att-href="'mailto:'+record.email.value">
+                                                                            <field name="email"/>
+                                                                        </a></div>
+                                                                        <div t-if="record.phone.raw_value">Phone: <field name="phone"/></div>
+                                                                        <div t-if="record.mobile.raw_value">Mobile: <field name="mobile"/></div>
+                                                                        <div t-if="record.fax.raw_value">Fax: <field name="fax"/></div>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
+                    </ul>                                                                               
+                </div>                                                                                  
+                <div id="sales" class="tab-pane">                                                      
+                    <ul class="list-group">                                                             
+                        
+                    </ul>                                                                                   
+                </div>                                                                                  
+                <div id="logins" class="tab-pane">                                                       
+                    <ul class="list-group">                                                             
+                        <field readonly="1" name="gmail_tokens" mode="kanban" >
+                                 <kanban>
+                                    <field name="name"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div style="position: relative">
+                                                <a t-if="! read_only_mode" type="delete" style="position: absolute; right: 0; padding: 4px; diplay: inline-block">X</a>
+                                                <div class="oe_module_vignette">
+                                                    <div class="oe_module_desc">
+                                                        <div class="oe_kanban_box_content oe_kanban_color_bglight oe_kanban_color_border">
+                                                            <table class="oe_kanban_table">
+                                                                <tr>
+                                                                    <td class="oe_kanban_title1" align="left" valign="middle">
+                                                                        <h4><field name="oauth_provider_id"/></h4>
+                                                                        <h4><field name="name"/></h4>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                        </field>
+                </ul>                                                                                   
+                </div>                                                                                  
+            </div>                                                                                      
+            </div>                                                                                      
+                </form>
+            </field>
+        </record>
+        <record id="base.action_res_users_my" model="ir.actions.act_window">
+            <field name="name">Change My Preferences</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.users</field>
+            <field name="target">inline</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+        </record>
+
+</data>
+</openerp>

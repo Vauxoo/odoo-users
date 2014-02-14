@@ -1,0 +1,4 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"log_groups_user","user.log.groups","model_user_log_groups","",1,0,1,0
+"gmail_tokens_user","gmail.tokens.normal","model_gmail_tokens","",1,1,1,0
+"gmail_tokens_manager","gmail.tokens.manager","model_gmail_tokens","gmail_user_control.group_gmail_token_manager",1,1,1,1
