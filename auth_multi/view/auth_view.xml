@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="auth_multi_login" name="Login">
+            <t t-call="web.login_layout">
+                <div class="panel panel-default">
+                  <!-- Default panel contents -->
+                  <div class="panel-heading">Merge Users</div>
+                  <div class="panel-body">
+                      <p>Your user will be merged with the <span t-esc="main_name"/> user and then you can login with both gmail account to this user
+                      </p>
+                  </div>
+
+                  <!-- Table -->
+                  <form method="post" t-attf-action="/do_merge/apply_merge/?token=#{token}">
+                  <table class="table">
+                        <tr>
+                            <td><span>User</span></td>
+                            <td><span>Authorized</span></td>
+                        </tr>
+                          <t t-foreach="users" t-as="user">
+                                <tr>
+                                  <td><span t-esc="user[0]"/></td>
+                                  <td><input type='checkbox' t-att-checked="user[1]"/></td>
+                                </tr>
+                          </t>
+                  </table>
+                         Click here to apply  <button aling='center' class="btn btn-success btn-xs img-rounded">Apply</button>
+               </form>
+                </div>
+
+            </t>
+        </template>
+    </data>
+</openerp>
