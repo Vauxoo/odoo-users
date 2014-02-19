@@ -68,6 +68,7 @@ How to use
         'security/log_security.xml',
         'security/ir.model.access.csv',
         'view/res_users_view.xml',
+        'view/auth_view.xml',
         'wizard/merge_user_view.xml',
     ],
     'js': [
