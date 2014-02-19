@@ -144,7 +144,9 @@ class res_users(osv.Model):
         return the user id found or created
         '''
         context = context or {}
-        user_ids  = self.search(cr, uid, [('email', '=', values.get('login'))], context=context)
+        user_ids  = self.search(cr, uid, ['|', ('login', '=', values.get('login')),
+                                               ('email', '=', values.get('login'))],
+                                context=context)
         if user_ids :
             result = self.check_token_exist(cr, uid, user_ids, values)
             user_brw = self.browse(cr, uid, user_ids[0], context=context)
