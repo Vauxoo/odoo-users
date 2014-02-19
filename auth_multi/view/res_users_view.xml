@@ -84,7 +84,7 @@
                             <field name="tz" readonly="0"/>
                             <label for="company_id" class="glyphicon glyphicon-info-sign oe_inline oe_inline"/>
                             <field name="company_id" widget="selection" readonly="0"
-                                groups="base.group_multi_company" on_change="on_change_company_id(company_id)"/>
+                                groups="base.group_multi_company" />
                             <label for="email" class="glyphicon glyphicon-info-sign oe_inline oe_inline"/>
                             <field name="email" widget="email" readonly="0"/>
                             <label for="signature" class="glyphicon glyphicon-info-sign oe_inline oe_inline"/>
