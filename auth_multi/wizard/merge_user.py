@@ -29,7 +29,7 @@ import re
 from openerp.addons.web import http
 openerpweb = http
 
-class merge_user_for_login_line(osv.TransientModel):
+class merge_user_for_login_line(osv.Model):
     _name = 'merge.user.for.login.line'
 
     _columns = {
@@ -42,7 +42,7 @@ class merge_user_for_login_line(osv.TransientModel):
         'authorized': fields.boolean('Authorized', help='True if this line was authorized'),
         
     }
-class merge_user_for_login(osv.TransientModel):
+class merge_user_for_login(osv.Model):
     _name = 'merge.user.for.login'
     _description = 'Merge Login'
 
@@ -134,6 +134,7 @@ class merge_user_for_login(osv.TransientModel):
         
         base_url = self.pool.get('ir.config_parameter').get_param(cr, uid, 'web.base.url',
                                                                   default='', context=context)
+        url = '%s/do_merge/execute_merge?token=%s' % (base_url, action)
         if not user.email:                                                                          
             raise osv.except_osv(_('Email Required'), _('The current user must have an email address configured in User Preferences to be able to send outgoing emails.'))
                                                                                                     
@@ -359,13 +360,15 @@ class merge_user_for_login(osv.TransientModel):
         user_obj = self.pool.get('res.users')
         merge_ids = ids or self.search(cr, SUPERUSER_ID, [('access_token', '=', token)],
                                        context=context)
-        merge_brw = ids and self.browse(cr, SUPERUSER_ID, merge_ids[0], context=context)
+        merge_brw = merge_ids and self.browse(cr, SUPERUSER_ID, merge_ids[0], context=context)
         parent_brw = user_obj.browse(cr, SUPERUSER_ID, merge_brw.user_id.id, context=context)
         user_brw = user_obj.browse(cr, SUPERUSER_ID, uid, context=context)
         anony = True
         if not merge_brw.executed:
             for user in merge_brw.user_ids:
-                if user.user_id.id == uid or user_brw.email == user.user_id.email:
+                if user.user_id.id == uid or \
+                        ((user_brw.login == user.user_id.login) or \
+                         (user_brw.email == user.user_id.email)):
                     anony = False
                     cr.execute('''UPDATE merge_user_for_login_line
                                   SET authorized=True
@@ -376,7 +379,6 @@ class merge_user_for_login(osv.TransientModel):
             if anony:
                 raise osv.except_osv(_('Error'), _('You need be logged in the system') )
 
-            merge_brw = ids and self.browse(cr, SUPERUSER_ID, merge_ids[0], context=context)
             if all([i.authorized for i in merge_brw.user_ids]):
                 fuse_obj = self.pool.get('merge.fuse.wizard')
                 user_ids = [i.user_id.id for i in merge_brw.user_ids]
