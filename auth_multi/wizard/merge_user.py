@@ -42,6 +42,10 @@ class merge_user_for_login_line(osv.Model):
         'authorized': fields.boolean('Authorized', help='True if this line was authorized'),
         
     }
+    _defaults = {
+            'authorized':False,
+            
+            }
 class merge_user_for_login(osv.Model):
     _name = 'merge.user.for.login'
     _description = 'Merge Login'
@@ -275,7 +279,7 @@ class merge_user_for_login(osv.Model):
         wzr_brw = self.browse(cr, SUPERUSER_ID, ids[0], context=context)
         parent_brw = user_obj.browse(cr, SUPERUSER_ID, wzr_brw.user_id.id, context=context)
         if wzr_brw.user_ids:
-            if all([i.user_id.email == parent_brw.email and True or False for i in wzr_brw.user_ids]):
+            if all([((i.user_id.login == parent_brw.login) or (i.user_id.email == parent_brw.email)) and True or False for i in wzr_brw.user_ids]):
                 fuse_obj = self.pool.get('merge.fuse.wizard')
                 user_ids = [i.user_id.id for i in wzr_brw.user_ids]
                 user_ids.insert(0, parent_brw.id)
@@ -291,14 +295,12 @@ class merge_user_for_login(osv.Model):
                 token = self.random_token(cr, SUPERUSER_ID)
                 wzr_brw.write({
                                'access_token': token,
+                               'user_ids':[(0, 0, {'user_id':wzr_brw.user_id.id})],
                               })
                 cr.commit()
                 for i in wzr_brw.user_ids:
-                    if i.user_id.email != parent_brw.email:
-                        self.send_emails(cr, SUPERUSER_ID, uid, i.user_id.id, token, wzr_brw.id)
-                    else:
-                        i.write({'authorized':True})
-                        cr.commit()
+                    self.send_emails(cr, SUPERUSER_ID, uid, i.user_id.id, token, wzr_brw.id)
+                self.send_emails(cr, SUPERUSER_ID, uid, wzr_brw.user_id.id, token, wzr_brw.id)
         return True
     def return_action(self, cr, uid, ids, context=None):
         context = context or {}
@@ -390,11 +392,9 @@ class merge_user_for_login(osv.Model):
                               })
                 cr.commit()
                 context = {'default_message':_('''Proccess finished users merged''')}
-                self.return_action(cr, uid, ids, context=context)
+                return True
             else:
                 context = {'default_message':_('You need permmision of others users to do this merge')}
-                self.return_action(cr, uid, ids, context=context)
+                return False
 
-        else:
-            raise osv.except_osv(_('Error'), _('The merge was executed'))
-        return self.return_action(cr, uid, ids, context=context)
+        return False
