@@ -320,7 +320,7 @@ class merge_user_for_login(osv.Model):
             'context':context,
         }
 
-    def onchange_search(self, cr, uid, ids, type, param, user, context=None):
+    def onchange_search(self, cr, uid, ids, type, param, user, lines, context=None):
         '''
         Search user with the same email sent from view and return the result or a message 
         @type: String with the field used to find user, this may be name or email
@@ -339,16 +339,30 @@ class merge_user_for_login(osv.Model):
         res = {'value':{}}
         if param and type=='email' and re.match("[^@]+@[^@]+\.[^@]+", param) or param:
             users += user_obj.search(cr, SUPERUSER_ID, [('%s' % type, '=', param)], context=context)
-#        if self.search(cr, SUPERUSER_ID, [('user_id', 'in', users)], context=context) or \
-#             line_obj.search(cr, SUPERUSER_ID, [('user_id', 'in', users)], context=context):
-#            return res
+        if self.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
+                                          ('executed', '=', False)], context=context) or \
+             line_obj.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
+                                                ('login.executed', '=', False)], context=context):
+            res['value'] = {'message': _('This user is being used in another merge that is not '
+                                         'validated yet')}
+            return res
         users = list(set(users))
         if users:
             user+= [{'user_id':i.id,
                      'same_email': i.email == parent_brw.email and True or False} \
                              for i in user_obj.browse(cr, SUPERUSER_ID, users)]
-            res['value'] = {'message': _('Users Found')}
+            res['value'] = {'message': _('User Found')}
             res['value'].update({'user_ids':user})
+        else:
+            res['value'] = {'message': _('User not Found')}
+
+        if lines:
+            for i in lines:
+                if i and i[0] == 0:
+                    if not i[2].get('user_id', 0) in users:
+                        user +=[i[2]]
+            res['value'].update({'user_ids':user})
+         
         return res
         
     def execute_merge(self, cr, uid, ids, context=None):

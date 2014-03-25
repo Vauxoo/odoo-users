@@ -7,7 +7,7 @@
             <field name="model">merge.user.for.login</field>
             <field name="priority">100</field>
             <field name="arch" type="xml">
-                <form string="Add Followers" version="7.0">
+                <form string="Merge Users" version="7.0">
                     <group>
                         <field name="type" />
                     </group>
@@ -25,7 +25,7 @@
             <field name="model">merge.user.for.login</field>
             <field name="priority">200</field>
             <field name="arch" type="xml">
-                <form string="Add Followers" version="7.0">
+                <form string="Merge Users" version="7.0">
                     <footer>
                         <button string="Change Gmail Fields"
                             name="change_gmail_fields" type="object" class="oe_highlight"  />
@@ -40,7 +40,7 @@
             <field name="model">merge.user.for.login</field>
             <field name="priority">300</field>
             <field name="arch" type="xml">
-                <form string="Add Followers" version="7.0">
+                <form string="Merge Users" version="7.0">
                     <footer>
                         <button string="Execute Merge"
                             name="execute_merge" type="object" class="oe_highlight"  />
@@ -55,20 +55,22 @@
             <field name="model">merge.user.for.login</field>
             <field name="priority">400</field>
             <field name="arch" type="xml">
-                <form string="Add Followers" version="7.0">
+                <form string="Merge Users" version="7.0">
                     <group>
-                    <field name="user_id" readonly="1" on_change="onchange_search(type, search, user_id)"/>
-                    <field name="type" readonly="1" on_change="onchange_search(type, search, user_id)"/>
+                    <field name="user_id" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
+                    <field name="type" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
                     <field name="search"
                            placeholder="i.e.: user@gmail.com"
-                           on_change="onchange_search(type, search, user_id)"/>
+                           on_change="onchange_search(type, search, user_id, user_ids)"/>
                 </group>
                     <p invisible="1">
                     If the names are red is because the email for these users are different to the
                     parent user in this wizard. Please verify the users in the lines, for our
                     security </p>
                     <field name="message" readonly="1" />
-                    <field name="user_ids" invisible="1">
+                    <field name="user_ids"
+                           on_change="onchange_search(type, search, user_id, user_ids)"
+                           invisible="1">
                         <tree string="Users Found" colors="red:same_email==False" >
                             <field name="user_id"/>
                             <field name="same_email" invisible="1"/>
@@ -88,19 +90,20 @@
             <field name="model">merge.user.for.login</field>
             <field name="priority">400</field>
             <field name="arch" type="xml">
-                <form string="Add Followers" version="7.0">
+                <form string="Merge Users" version="7.0">
                     <group>
-                    <field name="user_id" readonly="1" on_change="onchange_search(type, search, user_id)"/>
-                    <field name="type" readonly="1" on_change="onchange_search(type, search, user_id)"/>
+                    <field name="user_id" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
+                    <field name="type" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
                     <field name="search"
                            placeholder="i.e.: user@gmail.com"
-                           on_change="onchange_search(type, search, user_id)"/>
+                           on_change="onchange_search(type, search, user_id, user_ids)"/>
                 </group>
                     <p>
                     If the names are red is because the email for these users are different to the
                     parent user in this wizard. Please verify the users in the lines, for our
                     security </p>
-                    <field name="user_ids" >
+                <field name="user_ids"
+                       on_change="onchange_search(type, search, user_id, user_ids)">
                         <tree string="Users Found" colors="red:same_email==False" >
                             <field name="user_id"/>
                             <field name="same_email" invisible="1"/>
@@ -120,11 +123,11 @@
             <field name="model">merge.user.for.login</field>
             <field name="priority">400</field>
             <field name="arch" type="xml">
-                <form string="Add Followers" version="7.0">
+                <form string="Merge Users" version="7.0">
                     <group>
-                    <field name="user_id" readonly="1" on_change="onchange_search(type, search, user_id)"/>
-                    <field name="type" readonly="1" on_change="onchange_search(type, search, user_id)"/>
-                    <field name="search" readonly="1" on_change="onchange_search(type, search, user_id)"/>
+                    <field name="user_id" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
+                    <field name="type" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
+                    <field name="search" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
                 </group>
                     <p>
                     If the names are red is because the email for these users are different to the
@@ -152,21 +155,36 @@
             <field name="model">merge.user.for.login</field>
             <field name="priority">4</field>
             <field name="arch" type="xml">
-                <form string="Add Followers" version="7.0">
-                    <group>
+                <form string="Merge Users" version="7.0">
+                    <field name="executed"
+                           invisible="1"
+                           />
+                    <group attrs="{'invisible':[('executed', '=', False)]}">
+                        <p> Merge Executed</p>
+                    </group>
+                    <group attrs="{'invisible':[('executed', '=', True)]}">
                         <field name="user_id"
                                readonly="1"
-                               on_change="onchange_search(type, search, user_id)"/>
+                               on_change="onchange_search(type, search, user_id, user_ids)"/>
                         <field name="type"
                                readonly="1"
-                               on_change="onchange_search(type, search, user_id)"/>
+                               on_change="onchange_search(type, search, user_id, user_ids)"/>
                         <field name="search"
                                readonly="1"
-                               on_change="onchange_search(type, search, user_id)"/>
+                               on_change="onchange_search(type, search, user_id, user_ids)"/>
+                        <field name="user_ids" 
+                               on_change="onchange_search(type, search, user_id, user_ids)"
+                               readonly="1">
+                            <tree string="Users Found"  >
+                                <field name="user_id" readonly="1"/>
+                                <field name="authorized" readonly="1"/>
+                            </tree>
+                        </field>
                     </group>
                     <footer>
                         <button string="Do Merge"
                                 name="execute_merge"
+                                attrs="{'invisible':[('executed', '=', True)]}"
                                 type="object"
                                 class="oe_highlight" />
                         or
@@ -180,7 +198,7 @@
             <field name="model">merge.user.for.login</field>
             <field name="priority">400</field>
             <field name="arch" type="xml">
-                <form string="Add Followers" version="7.0">
+                <form string="Merge Users" version="7.0">
                     <group>
                         <field name="message" readonly="1" nolabel="1"/>
                     </group>
