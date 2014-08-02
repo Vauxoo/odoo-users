@@ -19,10 +19,8 @@
 #
 ##############################################################################
 
-from openerp import tools
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
-from openerp.tools.safe_eval import safe_eval
 import random
 from openerp import SUPERUSER_ID
 import re
@@ -37,14 +35,14 @@ class merge_user_for_login_line(osv.Model):
         'same_email': fields.boolean('Same Email',
                                      help='To identifed if this line has the same email'),
         'user_id':fields.many2one('res.users', 'Main User', help='Main users, result of all '
-                                                                 'process'), 
-        'login':fields.many2one('merge.user.for.login', 'Login'), 
+                                                                 'process'),
+        'login':fields.many2one('merge.user.for.login', 'Login'),
         'authorized': fields.boolean('Authorized', help='True if this line was authorized'),
-        
+
     }
     _defaults = {
             'authorized':False,
-            
+
             }
 class merge_user_for_login(osv.Model):
     _name = 'merge.user.for.login'
@@ -54,14 +52,14 @@ class merge_user_for_login(osv.Model):
 
         'executed': fields.boolean('Excecuted', help='True if this line was merged'),
         'message': fields.text('Message', help='Info about search'),
-        'search':fields.char('Criterial', help='Name or  email to search'),
-        
+        'search_c':fields.char('Criterial', help='Name or  email to search'),
+
         'user_id':fields.many2one('res.users', 'Main User', help='Main users, result of all '
-                                                                 'process'), 
+                                                                 'process'),
         'user_ids': fields.one2many('merge.user.for.login.line', 'login', string='User to merge',
                                      help='User will be merged'),
         'type':fields.selection([('name', 'Name'),('email', 'Email')], 'Search Type',
-                                help='Criterial search to determinate if an user is duplicated'), 
+                                help='Criterial search to determinate if an user is duplicated'),
         'access_token': fields.char('Access Token'),
     }
     _defaults = {
@@ -71,12 +69,12 @@ class merge_user_for_login(osv.Model):
 
     def random_token(self, cr, uid, context=None):
         '''
-        Generates an ID to identify each one of record created 
+        Generates an ID to identify each one of record created
         return the strgin with record ID
         '''
         context = context or {}
-        # the token has an entropy of about 120 bits (6 bits/char * 20 chars)                              
-        chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'                           
+        # the token has an entropy of about 120 bits (6 bits/char * 20 chars)
+        chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
         token = ''.join(random.choice(chars) for i in xrange(20))
         if self.search(cr, uid, [('access_token', '=', token)]):
             return self.random_token(cr, uid)
@@ -111,23 +109,18 @@ class merge_user_for_login(osv.Model):
                                             'oauth_access_token': user_brw.oauth_access_token,
                                             })],
                                 })
-                user_brw.write({
-                    'oauth_provider_id':False,
-                    'oauth_uid': False,
-                    'user_id': False,
-                                })
         return True
-    def send_emails(self, cr, uid, main_id, user_id, action, res_id, context=None):                                      
+    def send_emails(self, cr, uid, main_id, user_id, action, res_id, context=None):
         '''
         Send an email to ask permission to do merge with users that have the same email account
         @param user_id: User id that receives the notification mail
         @param action_id: String with the token of the record created
         @param res_id: Id of record created to do merge
         '''
-        mail_mail = self.pool.get('mail.mail')                                                      
-        partner_obj = self.pool.get('res.partner')                                                      
+        mail_mail = self.pool.get('mail.mail')
+        partner_obj = self.pool.get('res.partner')
         user_obj = self.pool.get('res.users')
-        user = user_obj.browse(cr, uid, user_id)                                 
+        user = user_obj.browse(cr, uid, user_id)
         main_user = user_obj.browse(cr, uid, main_id, context=context)
         url = partner_obj._get_signup_url_for_action(cr, user.id, [user.partner_id.id],
                 action='',
@@ -135,117 +128,117 @@ class merge_user_for_login(osv.Model):
         model, action_id = self.pool.get('ir.model.data').get_object_reference(cr, uid,
                                                                                'auth_multi',
                                                                                'validate_merge_action')
-        
+
         base_url = self.pool.get('ir.config_parameter').get_param(cr, uid, 'web.base.url',
                                                                   default='', context=context)
         url = '%s/do_merge/execute_merge?token=%s' % (base_url, action)
-        if not user.email:                                                                          
+        if not user.email:
             raise osv.except_osv(_('Email Required'), _('The current user must have an email address configured in User Preferences to be able to send outgoing emails.'))
-                                                                                                    
-        # TODO: also send an HTML version of this mail                                              
-        mail_ids = []                                                                               
-        email_to = user.email                                                    
-        subject = user.name                                                              
-        body =''' 
+
+        # TODO: also send an HTML version of this mail
+        mail_ids = []
+        email_to = user.email
+        subject = user.name
+        body ='''
             <head>
-                <body>                                                                                          
-                    <center>                                                                                            
+                <body>
+                    <center>
                         <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable">
-                            <tr>                                                                                
-                                <td align="center" valign="top">                                                
+                            <tr>
+                                <td align="center" valign="top">
                                     <table border="0" cellpadding="0" cellspacing="0" width="600" id="templateContainer">
                                         <tr style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(247, 247, 247);">
-                                            <td align="center" valign="top">                                    
-                                                <!-- // Begin Template Header \\ -->                            
+                                            <td align="center" valign="top">
+                                                <!-- // Begin Template Header \\ -->
                                                 <table border="0" cellpadding="0" cellspacing="0" width="600" style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(253, 253, 253);">
-                                                    <tr>                                                        
+                                                    <tr>
                                                         <td class="headerContent" width="100%" style="padding-left:10px; padding-right:20px;">
-                                                            <div mc:edit="Header_content">                      
-                                                                <h2 style="color:red;">'''+_('Merge Proposal')+'''</h2>       
-                                                            </div>                                              
-                                                        </td>                                                   
-                                                    </tr>                                                       
-                                                </table>                                                        
-                                                <!-- // End Template Header \\ -->                              
-                                            </td>                                                               
-                                        </tr>                                                                   
-                                        <tr>                                                                    
-                                            <td align="center" valign="top">                                    
-                                                <!-- // Begin Template Body \\ -->                              
+                                                            <div mc:edit="Header_content">
+                                                                <h2 style="color:red;">'''+_('Merge Proposal')+'''</h2>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <!-- // End Template Header \\ -->
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="center" valign="top">
+                                                <!-- // Begin Template Body \\ -->
                                                 <table border="0" cellpadding="10" cellspacing="0" width="600" style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(247, 247, 247);">
-                                                    <tr>                                                        
-                                                        <!-- // Begin Sidebar \\  -->                           
-                                                        <td valign="top" width="180" id="templateSidebar">         
+                                                    <tr>
+                                                        <!-- // Begin Sidebar \\  -->
+                                                        <td valign="top" width="180" id="templateSidebar">
                                                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                                <tr>                                            
-                                                                    <td valign="top">                           
-                                                                                                                
+                                                                <tr>
+                                                                    <td valign="top">
+
                                                                         <!-- // Begin Module: Standard Content \\ -->
                                                                         <table border="0" cellpadding="20" cellspacing="0" width="100%" style="margin: 0px; padding: 0px; width: 100%; background-color: rgb(249, 252, 255);">
-                                                                            <tr>                                
+                                                                            <tr>
                                                                                 <td valign="top" style="padding-left:10px;">
                                                                                     <div mc:edit="std_content01" >
                                                                                         <strong>'''+_('Access to Merge')+'''</strong>
-                                                                                        <br />                  
+                                                                                        <br />
                                                                                         <a
                                                                                         href="'''+url+'''">'''+base_url+'''</a>
-                                                                                        <br />                  
-                                                                                        <br />                  
+                                                                                        <br />
+                                                                                        <br />
                                                                                         <strong>'''+_('Generated By:')+'''</strong>
-                                                                                        <br />                  
-                                                                                        '''+main_user.name+'''            
-                                                                                        <br />                  
-                                                                                        <br />                  
-                                                                                        '''+_('If you are disagree ignore this email Contact with your administrator')+'''        
-                                                                                    </div>                      
-                                                                                </td>                           
-                                                                            </tr>                               
-                                                                        </table>                                
+                                                                                        <br />
+                                                                                        '''+main_user.name+'''
+                                                                                        <br />
+                                                                                        <br />
+                                                                                        '''+_('If you are disagree ignore this email Contact with your administrator')+'''
+                                                                                    </div>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </table>
                                                                         <!-- // End Module: Standard Content \\ -->
-                                                                                                                
-                                                                    </td>                                       
-                                                                </tr>                                           
-                                                            </table>                                            
-                                                        </td>                                                   
-                                                        <!-- // End Sidebar \\ -->                              
-                                                        <td valign="top" class="bodyContent">                   
-                                                                                                                
-                                                            <!-- // Begin Module: Standard Content \\ -->          
+
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
+                                                        <!-- // End Sidebar \\ -->
+                                                        <td valign="top" class="bodyContent">
+
+                                                            <!-- // Begin Module: Standard Content \\ -->
                                                             <table border="0" cellpadding="10" cellspacing="0" width="100%">
-                                                                <tr>                                            
-                                                                    <td valign="top" style="padding-left:0;">   
-                                                                        <div mc:edit="std_content00">           
+                                                                <tr>
+                                                                    <td valign="top" style="padding-left:0;">
+                                                                        <div mc:edit="std_content00">
                                                                             <h2 class="h2">'''+_('Dear ')+user.name+'''</h2>
                                                                             <pre style="font-size:1.1em;
                                                                             font-family:Arial">'''+_('You have a request to join this user. If you agree do click on the access link')+'''</pre>
-                                                                            <br />                              
-                                                                        </div>                                  
-                                                                    </td>                                       
-                                                                </tr>                                           
-                                                            </table>                                            
-                                                            <!-- // End Module: Standard Content \\ -->         
-                                                                                                                
-                                                        </td>                                                   
-                                                    </tr>                                                       
-                                                </table>                                                        
-                                                <!-- // End Template Body \\ -->                                
-                                            </td>                                                               
-                                    </table>                                                                    
-                                    <br />                                                                      
-                                </td>                                                                           
-                            </tr>                                                                               
-                        </table>                                                                                
-                    </center>                                                                                   
-                </body>                                                                                         
-            </head>                                                                                             
-        ''' 
-        mail_ids.append(mail_mail.create(cr, uid, {                                             
-                'email_from': user.email,                                                       
-                'email_to': email_to,                                                           
-                'subject': subject,                                                             
-                'body_html':  body}, context=context))                         
-        # force direct delivery, as users expect instant notification                               
-        mail_mail.send(cr, uid, mail_ids, context=context)                                          
+                                                                            <br />
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                            <!-- // End Module: Standard Content \\ -->
+
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <!-- // End Template Body \\ -->
+                                            </td>
+                                    </table>
+                                    <br />
+                                </td>
+                            </tr>
+                        </table>
+                    </center>
+                </body>
+            </head>
+        '''
+        mail_ids.append(mail_mail.create(cr, uid, {
+                'email_from': user.email,
+                'email_to': email_to,
+                'subject': subject,
+                'body_html':  body}, context=context))
+        # force direct delivery, as users expect instant notification
+        mail_mail.send(cr, uid, mail_ids, context=context)
         return True
 
     def do_pre_merge(self, cr, uid, ids, context=None):
@@ -310,7 +303,7 @@ class merge_user_for_login(osv.Model):
         model, view_id = self.pool.get('ir.model.data').get_object_reference(cr, uid,
                                                                                'auth_multi',
                                                                                'show_message_in_merge_view_form')
-        return {                                                                                       
+        return {
             'view_type': 'form',
             'view_mode': 'form',
             'res_model': 'merge.user.for.login',
@@ -322,7 +315,7 @@ class merge_user_for_login(osv.Model):
 
     def onchange_search(self, cr, uid, ids, type, param, user, lines, context=None):
         '''
-        Search user with the same email sent from view and return the result or a message 
+        Search user with the same email sent from view and return the result or a message
         @type: String with the field used to find user, this may be name or email
         @param: String with the name or email used to find user with same Criterial
         @user: User ID of the main user
@@ -331,7 +324,7 @@ class merge_user_for_login(osv.Model):
         context = context or {}
         user_obj = self.pool.get('res.users')
         line_obj = self.pool.get('merge.user.for.login.line')
-        
+
         user_ids = user_obj.search(cr, SUPERUSER_ID, [], context=context)
         parent_brw = user_obj.browse(cr, SUPERUSER_ID, user, context=context)
         user = []
@@ -362,17 +355,17 @@ class merge_user_for_login(osv.Model):
                     if not i[2].get('user_id', 0) in users:
                         user +=[i[2]]
             res['value'].update({'user_ids':user})
-         
+
         return res
-        
+
     def execute_merge(self, cr, uid, ids, context=None):
         """
-        Execute the merge if all users involved allow this change else show a message reporting 
+        Execute the merge if all users involved allow this change else show a message reporting
         why you can't do it
         """
         context = context or {}
         fuse_obj = self.pool.get('merge.fuse.wizard')
-        token = context.get('record', False) 
+        token = context.get('record', False)
         user_obj = self.pool.get('res.users')
         merge_ids = ids or self.search(cr, SUPERUSER_ID, [('access_token', '=', token)],
                                        context=context)
