@@ -1,11 +1,7 @@
-from openerp.addons.web import http                                                                    
-from openerp.addons.web.http import request
-import openerp.addons.web.controllers.main as webmain
-from openerp import SUPERUSER_ID
-import openerp
+from openerp import http
+from openerp.http import request
 from openerp import SUPERUSER_ID
 
-from urllib import quote_plus
 
 openerpweb = http
 
@@ -25,7 +21,7 @@ class auth_muti_login(openerpweb.Controller):
         if uid == public_user.id:
             url = u'/do_merge/execute_merge?token=%s' % post.get('token')
             query = {'redirect': url}
-            return http.local_redirect('/web/login', query=query) 
+            return http.local_redirect('/web/login', query=query)
 
         merge_login_obj = request.registry['merge.user.for.login']
         merge_ids = merge_login_obj.search(cr, uid, [('access_token', '=', post.get('token'))],
@@ -35,8 +31,8 @@ class auth_muti_login(openerpweb.Controller):
             if merge_brw.executed:
                 values['process'] = 'used'
                 values['message'] = 'Token Excecuted'
-        
-                return request.website.render("auth_multi.auth_multi_token_used", values)
+
+                return request.render("auth_multi.auth_multi_token_used", values)
 
             values['main_name'] = merge_brw.user_id.name
             values['same_user'] = (merge_brw.user_id.id == uid)
@@ -44,9 +40,9 @@ class auth_muti_login(openerpweb.Controller):
             for users in merge_brw.user_ids:
                 names.append((users.user_id.name, users.authorized))
             values['users'] = names
-            values['token'] = post.get('token') 
-        
-        return request.website.render("auth_multi.auth_multi_login", values) 
+            values['token'] = post.get('token')
+
+        return request.render("auth_multi.auth_multi_login", values)
 
     @http.route(['/do_merge/apply_merge'], type='http', auth="public", website=True, multilang=True)
     def apply_merge(self, **post):
@@ -70,7 +66,7 @@ class auth_muti_login(openerpweb.Controller):
             values['auth'] = all(auth)
             values['process'] = 'error'
             values['message'] = 'Error'
-        
+
         return result and \
-                 request.website.render("auth_multi.auth_multi_proccess_completed", values) or \
-                 request.website.render("auth_multi.auth_multi_token_used", values)
+                 request.render("auth_multi.auth_multi_proccess_completed", values) or \
+                 request.render("auth_multi.auth_multi_token_used", values)
