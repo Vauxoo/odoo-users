@@ -2,3 +2,5 @@
 "log_groups_user","user.log.groups","model_user_log_groups","",1,0,1,0
 "gmail_tokens_user","gmail.tokens.normal","model_gmail_tokens","",1,1,1,0
 "gmail_tokens_manager","gmail.tokens.manager","model_gmail_tokens","auth_multi.group_gmail_token_manager",1,1,1,1
+"access_merge_user_for_login_line","access_merge_user_for_login_line","model_merge_user_for_login_line",,1,1,1,1
+"access_merge_user_for_login","access_merge_user_for_login","model_merge_user_for_login",,1,1,1,1
