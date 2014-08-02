@@ -15,7 +15,7 @@
                         <button string="Do Pre Merge"
                             name="do_pre_merge" type="object" class="oe_highlight"  />
                         or
-                        <button string="Cancel" class="oe_link" special="cancel" />    
+                        <button string="Cancel" class="oe_link" special="cancel" />
                     </footer>
                 </form>
             </field>
@@ -30,7 +30,7 @@
                         <button string="Change Gmail Fields"
                             name="change_gmail_fields" type="object" class="oe_highlight"  />
                         or
-                        <button string="Cancel" class="oe_link" special="cancel" />    
+                        <button string="Cancel" class="oe_link" special="cancel" />
                     </footer>
                 </form>
             </field>
@@ -45,7 +45,7 @@
                         <button string="Execute Merge"
                             name="execute_merge" type="object" class="oe_highlight"  />
                         or
-                        <button string="Cancel" class="oe_link" special="cancel" />    
+                        <button string="Cancel" class="oe_link" special="cancel" />
                     </footer>
                 </form>
             </field>
@@ -57,11 +57,11 @@
             <field name="arch" type="xml">
                 <form string="Merge Users" version="7.0">
                     <group>
-                    <field name="user_id" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
-                    <field name="type" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
-                    <field name="search"
+                    <field name="user_id" readonly="1" on_change="onchange_search(type, search_c, user_id, user_ids)"/>
+                    <field name="type" readonly="1" on_change="onchange_search(type, search_c, user_id, user_ids)"/>
+                    <field name="search_c"
                            placeholder="i.e.: user@gmail.com"
-                           on_change="onchange_search(type, search, user_id, user_ids)"/>
+                           on_change="onchange_search(type, search_c, user_id, user_ids)"/>
                 </group>
                     <p invisible="1">
                     If the names are red is because the email for these users are different to the
@@ -69,7 +69,7 @@
                     security </p>
                     <field name="message" readonly="1" />
                     <field name="user_ids"
-                           on_change="onchange_search(type, search, user_id, user_ids)"
+                           on_change="onchange_search(type, search_c, user_id, user_ids)"
                            invisible="1">
                         <tree string="Users Found" colors="red:same_email==False" >
                             <field name="user_id"/>
@@ -80,7 +80,7 @@
                         <button string="Send Mail"
                             name="do_pre_merge_from_users" type="object" class="oe_highlight"  />
                         or
-                        <button string="Cancel" class="oe_link" special="cancel" />    
+                        <button string="Cancel" class="oe_link" special="cancel" />
                     </footer>
                 </form>
             </field>
@@ -92,18 +92,18 @@
             <field name="arch" type="xml">
                 <form string="Merge Users" version="7.0">
                     <group>
-                    <field name="user_id" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
-                    <field name="type" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
-                    <field name="search"
+                    <field name="user_id" readonly="1" on_change="onchange_search(type, search_c, user_id, user_ids)"/>
+                    <field name="type" readonly="1" on_change="onchange_search(type, search_c, user_id, user_ids)"/>
+                    <field name="search_c"
                            placeholder="i.e.: user@gmail.com"
-                           on_change="onchange_search(type, search, user_id, user_ids)"/>
+                           on_change="onchange_search(type, search_c, user_id, user_ids)"/>
                 </group>
                     <p>
                     If the names are red is because the email for these users are different to the
                     parent user in this wizard. Please verify the users in the lines, for our
                     security </p>
                 <field name="user_ids"
-                       on_change="onchange_search(type, search, user_id, user_ids)">
+                       on_change="onchange_search(type, search_c, user_id, user_ids)">
                         <tree string="Users Found" colors="red:same_email==False" >
                             <field name="user_id"/>
                             <field name="same_email" invisible="1"/>
@@ -113,7 +113,7 @@
                         <button string="Execute Merge"
                             name="do_pre_merge_from_users" type="object" class="oe_highlight"  />
                         or
-                        <button string="Cancel" class="oe_link" special="cancel" />    
+                        <button string="Cancel" class="oe_link" special="cancel" />
                     </footer>
                 </form>
             </field>
@@ -125,9 +125,9 @@
             <field name="arch" type="xml">
                 <form string="Merge Users" version="7.0">
                     <group>
-                    <field name="user_id" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
-                    <field name="type" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
-                    <field name="search" readonly="1" on_change="onchange_search(type, search, user_id, user_ids)"/>
+                    <field name="user_id" readonly="1" on_change="onchange_search(type, search_c, user_id, user_ids)"/>
+                    <field name="type" readonly="1" on_change="onchange_search(type, search_c, user_id, user_ids)"/>
+                    <field name="search_c" readonly="1" on_change="onchange_search(type, search_c, user_id, user_ids)"/>
                 </group>
                     <p>
                     If the names are red is because the email for these users are different to the
@@ -145,7 +145,7 @@
                                 type="object"
                                 class="oe_highlight"  />
                         or
-                        <button string="Cancel" class="oe_link" special="cancel" />    
+                        <button string="Cancel" class="oe_link" special="cancel" />
                     </footer>
                 </form>
             </field>
@@ -165,15 +165,15 @@
                     <group attrs="{'invisible':[('executed', '=', True)]}">
                         <field name="user_id"
                                readonly="1"
-                               on_change="onchange_search(type, search, user_id, user_ids)"/>
+                               on_change="onchange_search(type, search_c, user_id, user_ids)"/>
                         <field name="type"
                                readonly="1"
-                               on_change="onchange_search(type, search, user_id, user_ids)"/>
-                        <field name="search"
+                               on_change="onchange_search(type, search_c, user_id, user_ids)"/>
+                        <field name="search_c"
                                readonly="1"
-                               on_change="onchange_search(type, search, user_id, user_ids)"/>
-                        <field name="user_ids" 
-                               on_change="onchange_search(type, search, user_id, user_ids)"
+                               on_change="onchange_search(type, search_c, user_id, user_ids)"/>
+                        <field name="user_ids"
+                               on_change="onchange_search(type, search_c, user_id, user_ids)"
                                readonly="1">
                             <tree string="Users Found"  >
                                 <field name="user_id" readonly="1"/>
@@ -188,7 +188,7 @@
                                 type="object"
                                 class="oe_highlight" />
                         or
-                        <button string="Cancel" class="oe_link" special="cancel" />    
+                        <button string="Cancel" class="oe_link" special="cancel" />
                     </footer>
                 </form>
             </field>
@@ -211,7 +211,7 @@
             <field name="res_model">merge.user.for.login</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
-            <field name="view_id" ref='show_message_in_merge_view_form'/> 
+            <field name="view_id" ref='show_message_in_merge_view_form'/>
             <field name="target">new</field>
         </record>
 
@@ -220,7 +220,7 @@
             <field name="res_model">merge.user.for.login</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
-            <field name="view_id" ref='search_users_in_view_form'/> 
+            <field name="view_id" ref='search_users_in_view_form'/>
             <field name="target">new</field>
         </record>
         <record id="validate_merge_action" model="ir.actions.act_window">
@@ -228,31 +228,31 @@
             <field name="res_model">merge.user.for.login</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
-            <field name="view_id" ref='apply_user_merge_view_form'/> 
+            <field name="view_id" ref='apply_user_merge_view_form'/>
             <field name="target">new</field>
         </record>
 
         <act_window name="Do Pre Merge"
-            key2="client_action_multi"                                             
-            res_model="merge.user.for.login"                                
-            src_model="res.users"                                            
-            view_type="form"                                                       
-            view_mode="form"                                                       
+            key2="client_action_multi"
+            res_model="merge.user.for.login"
+            src_model="res.users"
+            view_type="form"
+            view_mode="form"
             view_id="mail_wizard_invite_view_form"
             groups="auth_multi.group_gmail_token_manager"
-            target="new"                                                           
-            id="do_merge_users"/> 
+            target="new"
+            id="do_merge_users"/>
 
         <act_window name="Change Fields"
-            key2="client_action_multi"                                             
-            res_model="merge.user.for.login"                                
-            src_model="res.users"                                            
-            view_type="form"                                                       
-            view_mode="form"                                                       
+            key2="client_action_multi"
+            res_model="merge.user.for.login"
+            src_model="res.users"
+            view_type="form"
+            view_mode="form"
             view_id="mail_wizard_change_field_view_form"
             groups="auth_multi.group_gmail_token_manager"
-            target="new"                                                           
-            id="do_merge_users_change"/> 
+            target="new"
+            id="do_merge_users_change"/>
 
     </data>
 </openerp>
