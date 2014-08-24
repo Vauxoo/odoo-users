@@ -48,14 +48,15 @@ class OAuthController(OAuthController):
                                             'client_id': p_brw.client_id,
                                             'client_secret': p_brw.client_secret})
                 endpoint = p_brw.url_get_token
-                if urlparse.urlparse(endpoint)[4]:
-                    url = endpoint + '&' + params
-                else:
-                    url = endpoint + '?' + params
-                f = urllib2.urlopen(url)
-                response = f.read()
-                response = werkzeug.url_decode(response)
-                kw.update({'access_token': response.get('access_token')})
+                if endpoint:
+                    if urlparse.urlparse(endpoint)[4]:
+                        url = endpoint + '&' + params
+                    else:
+                        url = endpoint + '?' + params
+                    f = urllib2.urlopen(url)
+                    response = f.read()
+                    response = werkzeug.url_decode(response)
+                    kw.update({'access_token': response.get('access_token')})
         return super(OAuthController, self).signin(**kw)
 
 # vim:expandtab:tabstop=4:softtabstop=4:shiftwidth=4:
