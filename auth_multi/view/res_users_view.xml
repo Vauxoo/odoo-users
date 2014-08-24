@@ -26,83 +26,57 @@
             <field name="model">res.users</field>
             <field eval="18" name="priority"/>
             <field name="arch" type="xml">
-            <form string="Users" version="7.0" class="bs3 bs3-form-bg bs3-footer">
-            <div class="container">
-                <div class="page-header nav nav-pills">
-                    <ul class="nav nav-pills">
-                      <li class='active'>
-                        <a data-toggle="tab" href="#main">
-                            <span >Main Info</span>
-                        </a>
-                      </li>
-                      <li>
-                        <a data-toggle="tab" invisible="1" groups="base.group_sale_salesman" href="#sales">
-                          <span >Sales</span>
-                        </a>
-                      </li>
-                      <li>
-                        <a data-toggle="tab" href="#logins">
-                          <span >My Logins</span>
-                        </a>
-                      </li>
-                      <li>
+            <form string="Users">
+                <sheet>
+                    <div class="oe_right oe_button_box" name="buttons">
                         <button name="preference_change_password"
                                 type="object"
-                                class="btn btn-primary btn-sm"
-                                string="Change password" />
-                      </li>
-                      <li>
+                                icon="fa fa-key"
+                                class="oe_inline oe_stat_button"
+                                string="Change Pass" />
                         <button name="search_users_for_merge"
                                 type="object"
-                                class="btn btn-primary btn-sm"
+                                class="oe_inline oe_stat_button"
+                                icon="fa fa-users"
                                 groups='base.group_user'
                                 string="Claim Users" />
-                      </li>
-                    </ul>
-                </div>
-            <div class="tab-content">
-                <div id="main" class="tab-pane active">
-                    <ul class="list-group">
-                        <div class="col-md-2" >
-                            <field name="image" widget='image' class="oe_avatar" />
-                        </div>
-                        <div class="col-md-8" >
-                        <h3>
-                            <field name="name" readonly="1" class="oe_inline"/>
-                            (<field name="login" readonly="1" class="oe_inline"/>)
-                        </h3>
-                            <label for="lang"  class="glyphicon glyphicon-info-sign oe_inline oe_inline" />
-                            <field name="lang"  nolabel="1" readonly="0"/>
-                            <label for="tz" class="glyphicon glyphicon-info-sign oe_inline" />
-                            <field name="tz" readonly="0"/>
-                            <label for="company_id" class="glyphicon glyphicon-info-sign oe_inline oe_inline"/>
-                            <field name="company_id" widget="selection" readonly="0"
-                                groups="base.group_multi_company" />
-                            <label for="email" class="glyphicon glyphicon-info-sign oe_inline oe_inline"/>
-                            <field name="email" widget="email" readonly="0"/>
-                            <label for="signature" class="glyphicon glyphicon-info-sign oe_inline oe_inline"/>
-                            <field name="signature" readonly="0"/>
-                        <footer>
-                            <button name="preference_save" type="object" string="Save"/>
-                            or
-                            <button name="preference_cancel" string="Cancel" special="cancel" class="oe_link"/>
-                        </footer>
-                        </div>
-                    </ul>
-                </div>
-                <div id="sales" class="tab-pane">
-                    <ul class="list-group">
-
-                    </ul>
-                </div>
-                <div id="logins" class="tab-pane">
-                    <ul class="list-group">
-                        <field readonly="1" name="gmail_tokens" mode="kanban" >
+                        <button name="preference_save"
+                                type="object"
+                                icon="fa fa-floppy-o"
+                                class="oe_inline oe_stat_button"
+                                string="Save"/>
+                        or
+                        <button name="preference_cancel"
+                                string="Cancel"
+                                icon="fa fa-times-circle"
+                                special="cancel"
+                                class="oe_inline oe_stat_button"
+                                />
+                    </div>
+                    <notebook>
+                        <page string="Main Info">
+                                    <field name="image" widget='image' class="oe_avatar" />
+                                    <field name="name" readonly="1" />
+                                    <field name="login" readonly="1"/>
+                                    <label for="lang"/>
+                                    <field name="lang"/>
+                                    <label for="tz"/>
+                                    <field name="tz"/>
+                                    <label for="company_id"/>
+                                    <field name="company_id" widget="selection" readonly="0"
+                                        groups="base.group_multi_company" />
+                                    <label for="email"/>
+                                    <field name="email" widget="email" readonly="0"/>
+                                    <label for="signature"/>
+                                    <field name="signature" readonly="0" nolabel="1"/>
+                        </page>
+                        <page string="My Related Accounts">
+                            <field readonly="1" name="gmail_tokens" mode="kanban" >
                                  <kanban>
                                     <field name="name"/>
                                     <templates>
                                         <t t-name="kanban-box">
-                                            <div style="position: relative">
+                                            <div style="position: relative" class="oe_kanban_card">
                                                 <a t-if="! read_only_mode" type="delete" style="position: absolute; right: 0; padding: 4px; diplay: inline-block">X</a>
                                                 <div class="oe_module_vignette">
                                                     <div class="oe_module_desc">
@@ -122,11 +96,10 @@
                                         </t>
                                     </templates>
                                 </kanban>
-                        </field>
-                </ul>
-                </div>
-            </div>
-            </div>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
                 </form>
             </field>
         </record>
