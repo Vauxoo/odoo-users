@@ -35,6 +35,8 @@ Auth wit Github API
         'auth_signup',
     ],
     'data': [
+        'data/auth_oauth_data.xml',
+        'view/auth_oauth_view.xml',
     ],
     'js': [
     ],

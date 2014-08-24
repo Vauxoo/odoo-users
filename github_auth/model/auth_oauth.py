@@ -7,4 +7,5 @@ class auth_oauth_provider(osv.osv):
 
     _columns = {
         'client_secret' : fields.char('Client Secret', help='The client secret you received'),
+        'url_get_token' : fields.char('URL to get Token', help='URL used to get the user token in github'),
     }
