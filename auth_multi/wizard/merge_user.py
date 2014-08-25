@@ -23,6 +23,8 @@ from openerp.osv import osv, fields
 from openerp.tools.translate import _
 import random
 from openerp import SUPERUSER_ID
+from openerp import tools
+from openerp.addons.email_template.email_template import mako_template_env
 import re
 from openerp.addons.web import http
 openerpweb = http
@@ -64,7 +66,6 @@ class merge_user_for_login(osv.Model):
     }
     _defaults = {
             'type':'email',
-            'message':_('Users not Found'),
             }
 
     def random_token(self, cr, uid, context=None):
@@ -324,12 +325,19 @@ class merge_user_for_login(osv.Model):
         context = context or {}
         user_obj = self.pool.get('res.users')
         line_obj = self.pool.get('merge.user.for.login.line')
-
-        user_ids = user_obj.search(cr, SUPERUSER_ID, [], context=context)
         parent_brw = user_obj.browse(cr, SUPERUSER_ID, user, context=context)
         user = []
         users = []
         res = {'value':{}}
+        body = '''
+            <div cellspacing="10" style="font-family:verdana;background-color:#C6DEFF;">
+                <div>Result:</div>
+                <div>${r.get('message')}</div>
+                <div>${r.get('request')}</div>
+            </div>
+        '''
+        t = mako_template_env.from_string(tools.ustr(body))
+
         if param and type=='email' and re.match("[^@]+@[^@]+\.[^@]+", param) or param:
             users += user_obj.search(cr, SUPERUSER_ID, [('%s' % type, '=', param)], context=context)
         if self.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
@@ -344,10 +352,17 @@ class merge_user_for_login(osv.Model):
             user+= [{'user_id':i.id,
                      'same_email': i.email == parent_brw.email and True or False} \
                              for i in user_obj.browse(cr, SUPERUSER_ID, users)]
-            res['value'] = {'message': _('User Found')}
+            body = t.render({'r':{'message': _('User Found'),
+                                  'request': _('Please press the Send Mail button to send the Merge request for this user'),
+                                  }})
+            res['value'] = {'message': body}
             res['value'].update({'user_ids':user})
         else:
-            res['value'] = {'message': _('User not Found')}
+            if param:
+                body = t.render({'r':{'message': _('User not Found'),
+                                      'request': _('The email placed in the criterial field was not found, please check it and try again'),
+                                  }})
+                res['value'] = {'message': body}
 
         if lines:
             for i in lines:
