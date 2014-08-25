@@ -67,7 +67,7 @@
                     If the names are red is because the email for these users are different to the
                     parent user in this wizard. Please verify the users in the lines, for our
                     security </p>
-                    <field name="message" readonly="1" />
+                    <field name="message" readonly="1"  widget='html'/>
                     <field name="user_ids"
                            on_change="onchange_search(type, search_c, user_id, user_ids)"
                            invisible="1">
