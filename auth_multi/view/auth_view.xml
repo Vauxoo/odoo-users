@@ -14,6 +14,9 @@
                       <t t-if='process == "used"'>
                       <p>This token was used and confirmed please check the url and try again</p>
                       </t>
+                      <t t-if='process == "notfound"'>
+                      <p>This token does not exist</p>
+                      </t>
                   </div>
                 </div>
 
@@ -33,7 +36,7 @@
                       </t>
                   </div>
                   <!-- Table -->
-                  <form method="post" t-attf-action="/web/login">
+                  <form method="post" t-attf-action="/web/login?">
                   <table class="table">
                         <tr>
                             <td><span>Login</span></td>
