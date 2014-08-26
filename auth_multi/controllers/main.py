@@ -41,6 +41,10 @@ class auth_muti_login(openerpweb.Controller):
                 names.append((users.user_id.name, users.authorized))
             values['users'] = names
             values['token'] = post.get('token')
+        else:
+            values['process'] = 'notfound'
+            return request.render("auth_multi.auth_multi_token_used", values)
+
 
         return request.render("auth_multi.auth_multi_login", values)
 
@@ -67,6 +71,8 @@ class auth_muti_login(openerpweb.Controller):
             values['process'] = 'error'
             values['message'] = 'Error'
 
-        return result and \
+        query = {'redirect': u'do_merge/execute_merge?token=%s' % post.get('token')}
+        return (type(result) == tuple) and http.local_redirect('/web/login', query=query) or \
+                result and \
                  request.render("auth_multi.auth_multi_proccess_completed", values) or \
-                 request.render("auth_multi.auth_multi_token_used", values)
+                             request.render("auth_multi.auth_multi_token_used", values)
