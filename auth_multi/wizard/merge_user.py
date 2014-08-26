@@ -68,6 +68,8 @@ class merge_user_for_login(osv.Model):
             'type':'email',
             }
 
+    _rec_name = 'access_token'
+
     def random_token(self, cr, uid, context=None):
         '''
         Generates an ID to identify each one of record created
@@ -386,23 +388,22 @@ class merge_user_for_login(osv.Model):
                                        context=context)
         merge_brw = merge_ids and self.browse(cr, SUPERUSER_ID, merge_ids[0], context=context)
         parent_brw = user_obj.browse(cr, SUPERUSER_ID, merge_brw.user_id.id, context=context)
-        user_brw = user_obj.browse(cr, SUPERUSER_ID, uid, context=context)
         anony = True
         if not merge_brw.executed:
             for user in merge_brw.user_ids:
-                if user.user_id.id == uid or \
-                        ((user_brw.login == user.user_id.login) or \
-                         (user_brw.email == user.user_id.email)):
+                if user.user_id.id == uid:
                     anony = False
-                    cr.execute('''UPDATE merge_user_for_login_line
-                                  SET authorized=True
-                                  WHERE id = %s''' % user.id)
+                    user.write({'authorized': True})
                     cr.commit()
                 elif parent_brw.id == uid:
                     anony = False
             if anony:
+                return (False, 'Login')
+
                 raise osv.except_osv(_('Error'), _('You need be logged in the system') )
 
+            merge_brw = merge_ids and \
+                self.browse(cr, SUPERUSER_ID, merge_ids[0], context=context)
             if all([i.authorized for i in merge_brw.user_ids]):
                 fuse_obj = self.pool.get('merge.fuse.wizard')
                 user_ids = [i.user_id.id for i in merge_brw.user_ids]
