@@ -66,7 +66,6 @@ class auth_muti_login(openerpweb.Controller):
             for users in merge_brw.user_ids:
                 names.append(users.user_id.email)
                 auth.append(users.authorized)
-            values['users'] = names
             values['auth'] = all(auth)
             values['process'] = 'error'
             values['message'] = 'Error'
@@ -74,5 +73,5 @@ class auth_muti_login(openerpweb.Controller):
         query = {'redirect': u'do_merge/execute_merge?token=%s' % post.get('token')}
         return (type(result) == tuple) and http.local_redirect('/web/login', query=query) or \
                 result and \
-                 request.render("auth_multi.auth_multi_proccess_completed", values) or \
+            http.local_redirect('/web/login', query={'redirect': '/'}) or \
                              request.render("auth_multi.auth_multi_token_used", values)
