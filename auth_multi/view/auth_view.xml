@@ -41,11 +41,6 @@
                         <tr>
                             <td><span>Login</span></td>
                         </tr>
-                          <t t-foreach="users" t-as="user">
-                                <tr>
-                                  <td><span t-esc="user"/></td>
-                                </tr>
-                          </t>
                           <footer>
                          <button aling='center' class="btn btn-success btn-xs img-rounded">Login</button>
                           </footer>
