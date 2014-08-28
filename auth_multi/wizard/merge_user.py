@@ -125,10 +125,11 @@ class merge_user_for_login(osv.Model):
         user_obj = self.pool.get('res.users')
         user = user_obj.browse(cr, uid, user_id)
         main_user = user_obj.browse(cr, uid, main_id, context=context)
+        data_obj = self.pool.get('ir.model.data')
         url = partner_obj._get_signup_url_for_action(cr, user.id, [user.partner_id.id],
                 action='',
                 res_id=res_id, model='merge.user.for.login', context=context)[user.partner_id.id]
-        model, action_id = self.pool.get('ir.model.data').get_object_reference(cr, uid,
+        model, action_id = data_obj.get_object_reference(cr, uid,
                                                                                'auth_multi',
                                                                                'validate_merge_action')
 
@@ -142,99 +143,23 @@ class merge_user_for_login(osv.Model):
         mail_ids = []
         email_to = user.email
         subject = user.name
-        body ='''
-            <head>
-                <body>
-                    <center>
-                        <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable">
-                            <tr>
-                                <td align="center" valign="top">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="600" id="templateContainer">
-                                        <tr style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(247, 247, 247);">
-                                            <td align="center" valign="top">
-                                                <!-- // Begin Template Header \\ -->
-                                                <table border="0" cellpadding="0" cellspacing="0" width="600" style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(253, 253, 253);">
-                                                    <tr>
-                                                        <td class="headerContent" width="100%" style="padding-left:10px; padding-right:20px;">
-                                                            <div mc:edit="Header_content">
-                                                                <h2 style="color:red;">'''+_('Merge Proposal')+'''</h2>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                                <!-- // End Template Header \\ -->
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td align="center" valign="top">
-                                                <!-- // Begin Template Body \\ -->
-                                                <table border="0" cellpadding="10" cellspacing="0" width="600" style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(247, 247, 247);">
-                                                    <tr>
-                                                        <!-- // Begin Sidebar \\  -->
-                                                        <td valign="top" width="180" id="templateSidebar">
-                                                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                                <tr>
-                                                                    <td valign="top">
-
-                                                                        <!-- // Begin Module: Standard Content \\ -->
-                                                                        <table border="0" cellpadding="20" cellspacing="0" width="100%" style="margin: 0px; padding: 0px; width: 100%; background-color: rgb(249, 252, 255);">
-                                                                            <tr>
-                                                                                <td valign="top" style="padding-left:10px;">
-                                                                                    <div mc:edit="std_content01" >
-                                                                                        <strong>'''+_('Access to Merge')+'''</strong>
-                                                                                        <br />
-                                                                                        <a
-                                                                                        href="'''+url+'''">'''+base_url+'''</a>
-                                                                                        <br />
-                                                                                        <br />
-                                                                                        <strong>'''+_('Generated By:')+'''</strong>
-                                                                                        <br />
-                                                                                        '''+main_user.name+'''
-                                                                                        <br />
-                                                                                        <br />
-                                                                                        '''+_('If you are disagree ignore this email Contact with your administrator')+'''
-                                                                                    </div>
-                                                                                </td>
-                                                                            </tr>
-                                                                        </table>
-                                                                        <!-- // End Module: Standard Content \\ -->
-
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
-                                                        </td>
-                                                        <!-- // End Sidebar \\ -->
-                                                        <td valign="top" class="bodyContent">
-
-                                                            <!-- // Begin Module: Standard Content \\ -->
-                                                            <table border="0" cellpadding="10" cellspacing="0" width="100%">
-                                                                <tr>
-                                                                    <td valign="top" style="padding-left:0;">
-                                                                        <div mc:edit="std_content00">
-                                                                            <h2 class="h2">'''+_('Dear ')+user.name+'''</h2>
-                                                                            <pre style="font-size:1.1em;
-                                                                            font-family:Arial">'''+_('You have a request to join this user. If you agree do click on the access link')+'''</pre>
-                                                                            <br />
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
-                                                            <!-- // End Module: Standard Content \\ -->
-
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                                <!-- // End Template Body \\ -->
-                                            </td>
-                                    </table>
-                                    <br />
-                                </td>
-                            </tr>
-                        </table>
-                    </center>
-                </body>
-            </head>
-        '''
+        template_obj = data_obj.get_object(cr, uid, 'auth_multi', 'merge_proposal_template')
+        body = template_obj.body_html
+        body_dict = {
+            'r': {
+                'tittle': _('Merge Proposal'),
+                'access': _('Access to Merge'),
+                'url': url,
+                'base_url': base_url,
+                'genereted': _('Generated By:'),
+                'name': main_user.name,
+                'message': _('If you are disagree ignore this email Contact with your administrator'),
+                'user': (_('Dear ') + user.name),
+                'message2': _('You have a request to join this user. If you agree do click on the access link'),
+            }
+        }
+        t = mako_template_env.from_string(tools.ustr(body))
+        body = t.render(body_dict)
         mail_ids.append(mail_mail.create(cr, uid, {
                 'email_from': user.email,
                 'email_to': email_to,
