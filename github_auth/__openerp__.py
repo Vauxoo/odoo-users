@@ -25,7 +25,17 @@
     'category' : 'Hidden',
     'description' : """
 Auth wit Github API
-============================================
+===================
+
+When you configure this, please use this configuration for the new oAuth provider:
+
+.. image:: /github_auth/static/src/doc/odoo_config.png
+
+And use this configuration on github:
+
+.. image:: /github_auth/static/src/doc/github_config.png
+
+Note that the client_id and key are provided by github.
 
     """,
     'website': 'http://www.vauxoo.com',
