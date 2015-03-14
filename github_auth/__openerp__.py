@@ -19,15 +19,16 @@
 #
 ##############################################################################
 {
-    'name' : 'Github Auth',
-    'version' : '0.1',
-    'author' : 'Vauxoo',
-    'category' : 'Hidden',
-    'description' : """
+    'name': 'Github Auth',
+    'version': '0.1',
+    'author': 'Vauxoo',
+    'category': 'Hidden',
+    'description': """
 Auth wit Github API
 ===================
 
-When you configure this, please use this configuration for the new oAuth provider:
+When you configure this, please use this configuration for the new oAuth
+provider:
 
 .. image:: /github_auth/static/src/doc/odoo_config.png
 
@@ -39,8 +40,8 @@ Note that the client_id and key are provided by github.
 
     """,
     'website': 'http://www.vauxoo.com',
-    'images' : [],
-    'depends' : [
+    'images': [],
+    'depends': [
         'auth_oauth',
         'auth_signup',
     ],
@@ -50,9 +51,9 @@ Note that the client_id and key are provided by github.
     ],
     'js': [
     ],
-    'qweb' : [
+    'qweb': [
     ],
-    'css':[
+    'css': [
     ],
     'demo': [
     ],
@@ -63,4 +64,3 @@ Note that the client_id and key are provided by github.
     'web_preload': False,
 }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
-
