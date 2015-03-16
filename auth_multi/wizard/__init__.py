@@ -1,1 +1,1 @@
-import merge_user
+from . import merge_user
