@@ -12,6 +12,7 @@ from openerp.modules.registry import RegistryManager
 
 _logger = logging.getLogger(__name__)
 
+
 def fragment_to_query_string(func):
     @functools.wraps(func)
     def wrapper(self, *a, **kw):
@@ -32,6 +33,7 @@ def fragment_to_query_string(func):
         return func(self, *a, **kw)
     return wrapper
 
+
 class OAuthController(OAuthController):
 
     @http.route('/auth_oauth/signin', type='http', auth='none')
@@ -43,10 +45,12 @@ class OAuthController(OAuthController):
         registry = RegistryManager.get(dbname)
         with registry.cursor() as cr:
             if not kw.get('access_token') and kw.get('code'):
-                p_brw = registry.get('auth.oauth.provider').browse(cr, SUPERUSER_ID, provider)
-                params = werkzeug.url_encode({'code': kw.get('code'),
-                                            'client_id': p_brw.client_id,
-                                            'client_secret': p_brw.client_secret})
+                p_brw = registry.get('auth.oauth.provider').\
+                    browse(cr, SUPERUSER_ID, provider)
+                params = werkzeug.url_encode({
+                    'code': kw.get('code'),
+                    'client_id': p_brw.client_id,
+                    'client_secret': p_brw.client_secret})
                 endpoint = p_brw.url_get_token
                 if endpoint:
                     if urlparse.urlparse(endpoint)[4]:

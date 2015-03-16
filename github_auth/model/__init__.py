@@ -1,2 +1,2 @@
-import auth_oauth
-import res_user
+from . import auth_oauth
+from . import res_user
