@@ -26,8 +26,6 @@ from openerp import SUPERUSER_ID
 from openerp import tools
 from openerp.addons.email_template.email_template import mako_template_env
 import re
-from openerp.addons.web import http
-openerpweb = http
 
 
 class merge_user_for_login_line(osv.Model):
@@ -155,10 +153,6 @@ class merge_user_for_login(osv.Model):
                                        res_id=res_id,
                                        model='merge.user.for.login',
                                        context=context)[user.partner_id.id]
-        model, action_id = data_obj.\
-            get_object_reference(cr, uid, 'auth_multi',
-                                 'validate_merge_action')
-
         base_url = self.pool.get('ir.config_parameter').\
             get_param(cr, uid, 'web.base.url', default='', context=context)
         url = '%s/do_merge/execute_merge?token=%s' % (base_url, action)
@@ -192,8 +186,8 @@ class merge_user_for_login(osv.Model):
                               'on the access link'),
             }
         }
-        t = mako_template_env.from_string(tools.ustr(body))
-        body = t.render(body_dict)
+        template = mako_template_env.from_string(tools.ustr(body))
+        body = template.render(body_dict)
         mail_ids.append(mail_mail.create(cr, uid, {
             'email_from': user.email,
             'email_to': email_to,
@@ -270,26 +264,7 @@ class merge_user_for_login(osv.Model):
                                  token, wzr_brw.id)
         return True
 
-    def return_action(self, cr, uid, ids, context=None):
-        context = context or {}
-        data_obj = self.pool.get('ir.model.data')
-        model, action_id = data_obj.\
-            get_object_reference(cr, uid, 'auth_multi',
-                                 'show_message_in_merge_action')
-        model, view_id = data_obj.\
-            get_object_reference(cr, uid, 'auth_multi',
-                                 'show_message_in_merge_view_form')
-        return {
-            'view_type': 'form',
-            'view_mode': 'form',
-            'res_model': 'merge.user.for.login',
-            'views': [(view_id, 'form')],
-            'type': 'ir.actions.act_window',
-            'target': 'inline',
-            'context': context
-        }
-
-    def onchange_search(self, cr, uid, ids, type, param, user, lines,
+    def onchange_search(self, cr, uid, ids, _type, param, user, lines,
                         context=None):
         '''
         Search user with the same email sent from view and return the result or
@@ -315,8 +290,8 @@ class merge_user_for_login(osv.Model):
       <div>${r.get('request')}</div>
   </div>
         '''
-        t = mako_template_env.from_string(tools.ustr(body))
-
+        template = mako_template_env.from_string(tools.ustr(body))
+        # pylint: disable=W1401
         if param and type == 'email' and \
                 re.match("[^@]+@[^@]+\.[^@]+", param) or param:
             users += user_obj.search(cr, SUPERUSER_ID, [('%s' % type, '=',
@@ -338,7 +313,7 @@ class merge_user_for_login(osv.Model):
                       'same_email': i.email == parent_brw.email and
                       True or False}
                      for i in user_obj.browse(cr, SUPERUSER_ID, users)]
-            body = t.render({'r': {'message': _('User Found'),
+            body = template.render({'r': {'message': _('User Found'),
                                    'request': _('Please press the Send '
                                                 'Mail button to send '
                                                 'the Merge request '
@@ -348,7 +323,7 @@ class merge_user_for_login(osv.Model):
             res['value'].update({'user_ids': user})
         else:
             if param:
-                body = t.render({'r': {'message': _('User not Found'),
+                body = template.render({'r': {'message': _('User not Found'),
                                        'request': _('The email placed in '
                                                     'the criterial field '
                                                     'was not found, please '
@@ -393,11 +368,6 @@ class merge_user_for_login(osv.Model):
                     anony = False
             if anony:
                 return (False, 'Login')
-
-                raise osv.except_osv(_('Error'),
-                                     _('You need be logged '
-                                       'in the system'))
-
             merge_brw = merge_ids and \
                 self.browse(cr, SUPERUSER_ID, merge_ids[0], context=context)
             if all([i.authorized for i in merge_brw.user_ids]):
