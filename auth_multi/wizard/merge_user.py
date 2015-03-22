@@ -318,7 +318,8 @@ class merge_user_for_login(osv.Model):
                                                 'Mail button to send '
                                                 'the Merge request '
                                                 'for this user')
-                                   }})
+                                          }
+                                    })
             res['value'] = {'message': body}
             res['value'].update({'user_ids': user})
         else:
@@ -328,7 +329,8 @@ class merge_user_for_login(osv.Model):
                                                     'the criterial field '
                                                     'was not found, please '
                                                     'check it and try again')
-                                       }})
+                                              }
+                                        })
                 res['value'] = {'message': body}
 
         if lines:
