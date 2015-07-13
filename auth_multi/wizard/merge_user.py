@@ -292,9 +292,10 @@ class merge_user_for_login(osv.Model):
         '''
         template = mako_template_env.from_string(tools.ustr(body))
         # pylint: disable=W1401
-        if param and type == 'email' and \
+        print param
+        if param and _type == 'email' and \
                 re.match("[^@]+@[^@]+\.[^@]+", param) or param:
-            users += user_obj.search(cr, SUPERUSER_ID, [('%s' % type, '=',
+            users += user_obj.search(cr, SUPERUSER_ID, [('%s' % _type, '=',
                                                          param)],
                                      context=context)
         if self.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
