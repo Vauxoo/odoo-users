@@ -20,11 +20,12 @@
 #
 ##############################################################################
 
-from openerp.osv import osv, fields
+from openerp.osv import osv
+from openerp import api, models, fields
 from lxml import etree
 from openerp import tools
 
-class merge_fuse_wizard(osv.TransientModel):
+class merge_fuse_wizard(models.TransientModel):
     _name = 'merge.fuse.wizard'
 
     def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
@@ -116,48 +117,91 @@ class merge_fuse_wizard(osv.TransientModel):
         return  {'type': 'ir.actions.act_window_close'}
 
 
-class merge_editing_wizard(osv.TransientModel):
+class merge_editing_wizard(models.TransientModel):
     _name = 'merge.editing.wizard'
 
-    _columns = {
-        'serpent_image': fields.binary('Image'),
-    }
-
-    _defaults = {
-        'serpent_image': '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',
-    }
-
-    def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
-        result = super(merge_editing_wizard, self).fields_view_get(cr, uid, view_id, view_type, context, toolbar,submenu)
+    def fields_view_get(self, cr, uid, view_id=None, view_type='form',
+                        context=None, toolbar=False, submenu=False):
+        result = super(merge_editing_wizard, self).fields_view_get(cr, uid,
+                                                                   view_id,
+                                                                   view_type,
+                                                                   context,
+                                                                   toolbar,
+                                                                   submenu)
         if context.get('merge_editing_object'):
             merge_object = self.pool.get('merge.object')
-            editing_data = merge_object.browse(cr, uid, context.get('merge_editing_object'), context)
+            editing_data = merge_object.browse(cr, uid,
+                                               context.get('merge_editing_object'),
+                                               context)
             all_fields = {}
-            xml_form = etree.Element('form', {'string': tools.ustr(editing_data.name)})
+            xml_form = etree.Element('form', {'string':
+                                              tools.ustr(editing_data.name)})
             xml_group = etree.SubElement(xml_form, 'group', {'colspan': '4'})
-            etree.SubElement(xml_group, 'field', {'name': 'serpent_image', 'nolabel': '1','colspan': '1', 'modifiers': '{"readonly": true}', 'widget':'image'})
+            etree.SubElement(xml_group, 'field', {'name': 'serpent_image',
+                                                  'nolabel': '1','colspan':
+                                                  '1', 'modifiers':
+                                                  '{"readonly": true}',
+                                                  'widget':'image'})
             etree.SubElement(xml_group, 'label', {'string': '','colspan': '2'})
             all_fields['serpent_image'] = {'type':'binary', 'string':''}
             xml_group = etree.SubElement(xml_form, 'group', {'colspan': '4'})
             model_obj = self.pool.get(context.get('active_model'))
             for field in editing_data.field_ids:
                 if field.ttype == "many2many":
-                    field_info = model_obj.fields_get(cr, uid, [field.name], context)
+                    field_info = model_obj.fields_get(cr, uid, [field.name],
+                                                      context)
                     all_fields[field.name] = field_info[field.name]
-                    all_fields["selection_"+field.name] = {'type':'selection', 'string': field_info[field.name]['string'],'selection':[('set','Set'),('remove_m2m','Remove'),('add','Add')]}
-                    xml_group = etree.SubElement(xml_group, 'group', {'colspan': '4'})
-                    etree.SubElement(xml_group, 'separator', {'string': field_info[field.name]['string'],'colspan': '2'})
-                    etree.SubElement(xml_group, 'field', {'name': "selection_"+field.name,'colspan': '2','nolabel':'1'})
-                    etree.SubElement(xml_group, 'field', {'name': field.name, 'colspan':'4', 'nolabel':'1', 'attrs':"{'invisible':[('selection_"+field.name+"','=','remove_m2m')]}"})
+                    all_fields["selection_"+field.name] = {'type':'selection',
+                                                           'string':
+                                                           field_info[field.name]\
+                                                           ['string'],
+                                                           'selection':[('set','Set'),
+                                                                        ('remove_m2m',
+                                                                         'Remove'),
+                                                                        ('add','Add')]}
+                    xml_group = etree.SubElement(xml_group, 'group',
+                                                 {'colspan': '4'})
+                    etree.SubElement(xml_group, 'separator', {'string':
+                                                              field_info[field.name]\
+                                                              ['string'],
+                                                              'colspan': '2'})
+                    etree.SubElement(xml_group,
+                                     'field',
+                                     {'name': "selection_"+field.name,
+                                      'colspan': '2', 'nolabel':'1'})
+                    etree.SubElement(xml_group,
+                                     'field',
+                                     {'name': field.name,
+                                      'colspan':'4',
+                                      'nolabel':'1',
+                                      'attrs': "{'invisible':[('selection_" + \
+                                      field.name + "','=','remove_m2m')]}"})
                 elif field.ttype == "many2one":
-                    field_info = model_obj.fields_get(cr, uid, [field.name], context)
+                    field_info = model_obj.fields_get(cr, uid, [field.name],
+                                                      context)
                     if field_info:
-                        all_fields["selection_"+field.name] = {'type':'selection', 'string': field_info[field.name]['string'],'selection':[('set','Set'),('remove','Remove')]}
-                        all_fields[field.name] = {'type':field.ttype, 'string': field.field_description, 'relation': field.relation}
-                        etree.SubElement(xml_group, 'field', {'name': "selection_"+field.name, 'colspan':'2'})
-                        etree.SubElement(xml_group, 'field', {'name': field.name,'nolabel':'1','colspan':'2', 'attrs':"{'invisible':[('selection_"+field.name+"','=','remove')]}"})
+                        all_fields["selection_" + field.name] = {'type':'selection',
+                                                                 'string': field_info[field.name]\
+                                                                 ['string'],
+                                                                 'selection':[('set','Set'),
+                                                                              ('remove','Remove')]}
+                        all_fields[field.name] = {'type':field.ttype,
+                                                  'string': field.field_description,
+                                                  'relation': field.relation}
+                        etree.SubElement(xml_group,
+                                         'field',
+                                         {'name': "selection_" + field.name,
+                                          'colspan': '2'})
+                        etree.SubElement(xml_group,
+                                         'field',
+                                         {'name': field.name,
+                                          'nolabel': '1',
+                                          'colspan': '2',
+                                          'attrs': "{'invisible':[('selection_" + field.name + \
+                                          "','=','remove')]}"})
                 elif field.ttype == "char":
-                    field_info = model_obj.fields_get(cr, uid, [field.name], context)
+                    field_info = model_obj.fields_get(cr, uid, [field.name],
+                                                      context)
                     all_fields["selection_"+field.name] = {'type':'selection', 'string': field_info[field.name]['string'],'selection':[('set','Set'),('remove','Remove')]}
                     all_fields[field.name] = {'type':field.ttype, 'string': field.field_description, 'size': field.size or 256}
                     etree.SubElement(xml_group, 'field', {'name': "selection_"+field.name,'colspan':'2', 'colspan':'2'})
