@@ -54,7 +54,7 @@ class merge_object(models.Model):
                                         help="Sidebar button to open "
                                         "the sidebar action")
     model_list = fields.Char('Model List', size=256)
-    fuse = fields.boolean('fuse elements', required=False)
+    fuse = fields.Boolean('fuse elements', required=False)
 
     @api.multi
     def onchange_model(self, model_id):

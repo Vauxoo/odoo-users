@@ -21,7 +21,7 @@
 #
 ##############################################################################
 
-from openerp import api, models, fields
+from openerp import api, models
 from lxml import etree
 from openerp import tools
 
@@ -96,8 +96,8 @@ class merge_fuse_wizard(models.TransientModel):
                 target_ids = []
                 target_model = self.pool.get(related.model)
                 field_obj = target_model and target_model.\
-                    _columns.get(related.name)
-                if isinstance(field_obj, fields.property):
+                    _fields.get(related.name)
+                if field_obj.company_dependent:
                     property_ids = []
                     for field_id in active_ids:
                         v_reference = '%s,%s' % (context.get('active_model'),
@@ -116,8 +116,8 @@ class merge_fuse_wizard(models.TransientModel):
                                            context=context)
                         continue
 
-                elif isinstance(field_obj, fields.function):
-                    if field_obj.store or field_obj._fnct_search:
+                elif field_obj.compute_value:
+                    if field_obj.store or field_obj.search:
                         target_ids = target_model.search(cr, uid,
                                                          [(related.name, 'in',
                                                            active_ids)])
@@ -130,8 +130,7 @@ class merge_fuse_wizard(models.TransientModel):
                         search(cr, uid, [(related.name, 'in', active_ids)])
                     if target_ids:
                         try:
-                            if isinstance(field_obj, (fields.many2many,
-                                                      fields.one2many)):
+                            if field_obj.type in ('many2many', 'one2many'):
                                 target_model.\
                                     write(cr, uid, target_ids,
                                           {str(related.name): [(4, base_id)]})
