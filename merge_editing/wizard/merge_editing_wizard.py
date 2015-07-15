@@ -116,7 +116,7 @@ class merge_fuse_wizard(models.TransientModel):
                                            context=context)
                         continue
 
-                elif field_obj.compute_value:
+                elif field_obj.compute:
                     if field_obj.store or field_obj.search:
                         target_ids = target_model.search(cr, uid,
                                                          [(related.name, 'in',
