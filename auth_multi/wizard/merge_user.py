@@ -297,16 +297,20 @@ class merge_user_for_login(osv.Model):
             users += user_obj.search(cr, SUPERUSER_ID, [('%s' % _type, '=',
                                                          param)],
                                      context=context)
-        if self.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
-                                          ('executed', '=', False)], context=context) or \
-                line_obj.search(cr, SUPERUSER_ID,
-                                [('user_id', 'in', users),
-                                 ('login.executed', '=', False)],
-                                context=context):
+        if line_obj.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
+                                              ('login.executed', '=', True)],
+                           context=context) or \
+                self.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
+                            ('executed', '=', True)], context=context):
             res['value'] = {
                 'message': _('This user is being used in another '
                              'merge that is not validated yet')}
             return res
+        old_token = self.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
+                                ('executed', '=', False)], context=context)
+        if old_token:
+            self.unlink(cr, uid, old_token)
+
         users = list(set(users))
         if users:
             user += [{'user_id': i.id,
