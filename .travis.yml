@@ -11,6 +11,9 @@ env:
 virtualenv:
   system_site_packages: true
 
+install:
+  - travis_install_nightly
+
 script:
   - travis_run_tests ${VERSION}
 
