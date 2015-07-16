@@ -44,6 +44,7 @@ Note that the client_id and key are provided by github.
     'depends': [
         'auth_oauth',
         'auth_signup',
+        'secret_key_auth',
     ],
     'data': [
         'data/auth_oauth_data.xml',

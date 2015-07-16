@@ -6,9 +6,6 @@
       <field name="model">auth.oauth.provider</field>
       <field name="inherit_id" ref="auth_oauth.view_oauth_provider_form"/>
       <field name="arch" type="xml">
-        <xpath expr="//field[@name='client_id']" position="after">
-            <field name="client_secret" />
-        </xpath>
         <xpath expr="//field[@name='scope']" position="after">
             <field name="url_get_token" />
         </xpath>
