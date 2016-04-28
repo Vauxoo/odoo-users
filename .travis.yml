@@ -1,24 +1,46 @@
-sudo: required
-
 language: python
+
+sudo: false
+cache:
+  apt: true
+  directories:
+    - $HOME/.cache/pip
+
+addons:
+  apt:
+    sources:
+      - pov-wkhtmltopdf
+    packages:
+      - expect-dev
+      - python-lxml
+      - python-simplejson
+      - python-yaml
+      - wkhtmltopdf
+      - poppler-utils
+      - antiword
+      - python-xlrd
+      - python-beautifulsoup4
 
 python:
   - "2.7"
 
 env:
-  - VERSION="8.0" ODOO_REPO="vauxoo/odoo" INCLUDE="merge_editing" LINT_CHECK="0"
+  global:
+  - LINT_CHECK=0 TESTS="0" VERSION="8.0" ODOO_REPO="vauxoo/odoo"
+  matrix:
+  - LINT_CHECK=1
+  - TESTS="1"
 
 virtualenv:
   system_site_packages: true
 
 install:
-  - git clone https://github.com/vauxoo/maintainer-quality-tools.git -b master  ${HOME}/maintainer-quality-tools
+  - git clone --single-branch --depth=1 https://github.com/vauxoo/maintainer-quality-tools.git -b master ${HOME}/maintainer-quality-tools
   - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
   - travis_install_nightly
 
 script:
-  - travis_run_tests ${VERSION}
+  - travis_run_tests
 
 after_success:
-  coveralls
-
+  - travis_after_tests_success
