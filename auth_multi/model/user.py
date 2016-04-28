@@ -29,63 +29,56 @@ import time
 import simplejson
 
 import openerp
-from openerp.osv import osv, fields
+from openerp import api, models, fields
 from openerp import SUPERUSER_ID
 
 _logger = logging.getLogger(__name__)
 
 
-class gmail_tokens(osv.Model):
+class GmailTokens(models.Model):
 
     _name = 'gmail.tokens'
 
-    _columns = {
-        'name': fields.char('Login', 64,
-                            help='User login for your gmail account'),
+    name = fields.Char('Login',
+                       help='User login for your gmail account')
+    oauth_provider_id = fields.Many2one('auth.oauth.provider',
+                                        'OAuth Provider')
+    oauth_uid = fields.Char('OAuth User ID',
+                            help="Oauth Provider user_id")
+    oauth_access_token = fields.Char('OAuth Access Token', readonly=True)
+    user_id = fields.Many2one('res.users', 'Users',
+                              help='Reference Object')
 
-        'oauth_provider_id': fields.many2one('auth.oauth.provider',
-                                             'OAuth Provider'),
-        'oauth_uid': fields.char('OAuth User ID',
-                                 help="Oauth Provider user_id"),
-        'oauth_access_token': fields.char('OAuth Access Token', readonly=True),
-        'user_id': fields.many2one('res.users', 'Users',
-                                   help='Reference Object')
-    }
     _sql_constraints = [('tokens_unique',
                          'unique(oauth_provider_id, '
                          'oauth_uid, oauth_access_token, user_id)',
                          'The email already have been set in another user')]
 
 
-class res_users(osv.Model):
+class ResUsers(models.Model):
     _inherit = 'res.users'
 
-    def _search_my_contacs(self, cr, uid, ids, name, args, context=None):
-        context = context or {}
-        partner_obj = self.pool.get('res.partner')
-        res = {}
-        for user_brw in self.browse(cr, uid, ids, context=context):
+    @api.multi
+    def _search_my_contacs(self):
+        partner_obj = self.env['res.partner']
+        for user_brw in self:
             partner_id = user_brw.partner_id and user_brw.partner_id.id
             partner_ids = partner_obj.\
-                search(cr, uid, [('parent_id', '=', partner_id)],
-                       context=context)
-            res.update({user_brw.id: partner_ids})
-        return res
+                search([('parent_id', '=', partner_id)])
+            user_brw.my_contacts = partner_ids.ids
 
-    _columns = {
-        'gmail_tokens': fields.one2many('gmail.tokens', 'user_id',
-                                        'Gmail Access',
-                                        help='Tokens that allow '
-                                        'do login with many google accounts'),
-        'my_contacts': fields.function(_search_my_contacs,
-                                       method=True, string='My Contacts',
-                                       type='one2many',
-                                       relation='res.partner',
-                                       help='All my Contacts Partner'),
+    gmail_tokens = fields.One2many('gmail.tokens', 'user_id',
+                                   'Gmail Access',
+                                   help='Tokens that allow '
+                                   'do login with many google accounts')
+    my_contacts = fields.One2many('res.partner',
+                                  compute='_search_my_contacs',
+                                  string='My Contacts',
+                                  help='All my Contacts Partner')
 
-        }
 
-    def check_token_exist(self, cr, uid, ids, values, context=None):
+    @api.multi
+    def check_token_exist(self, values):
         '''
         Check if token exist with the new model that contain all token allowed
         by an user
@@ -94,18 +87,15 @@ class res_users(osv.Model):
         system
         return True if the token sent in values exist else return False
         '''
-        context = context or {}
-        gmail_tokens_obj = self.pool.get('gmail.tokens')
-        if ids:
+        gmail_tokens_obj = self.env['gmail.tokens']
+        for user in self:
             tokens_ids = gmail_tokens_obj.\
-                search(cr, uid,
-                       [('oauth_provider_id', '=',
+                search([('oauth_provider_id', '=',
                          values.get('oauth_provider_id')),
                         ('oauth_uid', '=', values.get('oauth_uid')),
-                        ('user_id', '=', ids[0]),
+                        ('user_id', '=', user.id),
                         ('oauth_access_token', '=',
-                         values.get('oauth_access_token'))],
-                       context=context)
+                         values.get('oauth_access_token'))])
             if tokens_ids:
                 return True
 
@@ -114,24 +104,25 @@ class res_users(osv.Model):
 
         return False
 
-    def check_credentials(self, cr, uid, password):
+    @api.model
+    def check_credentials(self, password):
         '''
         Verifies that token is allowed by the user that tries do login
         @param password: String with the token sent
         '''
-        token_obj = self.pool.get('gmail.tokens')
+        token_obj = self.env['gmail.tokens']
 
         try:
-            return super(res_users, self).check_credentials(cr, uid, password)
+            return super(ResUsers, self).check_credentials(password)
         except openerp.exceptions.AccessDenied:
-            res = token_obj.\
-                search(cr, SUPERUSER_ID,
-                       [('user_id', '=', uid),
+            res = token_obj.sudo(SUPERUSER_ID).\
+                search([('user_id', '=', self._uid),
                         ('oauth_access_token', '=', password)])
             if not res:
                 raise
 
-    def _signup_create_user(self, cr, uid, values, context=None):
+    @api.model
+    def _signup_create_user(self, values):
         '''
         Tries to create a new user but first search if any user has a email
         with the login that
@@ -142,15 +133,12 @@ class res_users(osv.Model):
         @param values: Dictionary with the user information to search or create
         return the user id found or created
         '''
-        context = context or {}
-        user_ids = self.search(cr, uid,
-                               ['|',
+        user_ids = self.search(['|',
                                 ('login', '=', values.get('login')),
-                                ('email', '=', values.get('login'))],
-                               context=context)
+                                ('email', '=', values.get('login'))])
         if user_ids:
-            result = self.check_token_exist(cr, uid, user_ids, values)
-            user_brw = self.browse(cr, uid, user_ids[0], context=context)
+            result = user_ids.check_token_exist(values)
+            user_brw = user_ids[0]
 
             if not result:
                 values.update({
@@ -164,13 +152,13 @@ class res_users(osv.Model):
                     })]
                     })
                 values.update({'login': user_brw.login})
-                self.write(cr, uid, user_ids[0], values, context=context)
-                cr.commit()
-                return user_ids[0]
+                user_brw.write(values)
+                self._cr.commit()
+                return user_ids.ids[0]
 
             else:
 
-                return user_ids[0]
+                return user_ids.ids[0]
         else:
             values.update({
                 'gmail_tokens': [(0, 0, {
@@ -183,11 +171,10 @@ class res_users(osv.Model):
                 })]
                 })
 
-        return super(res_users, self).\
-            _signup_create_user(cr, uid, values, context=context)
+        return super(ResUsers, self)._signup_create_user(values)
 
-    def _auth_oauth_signin(self, cr, uid, provider, validation, params,
-                           context=None):
+    @api.model
+    def _auth_oauth_signin(self, provider, validation, params):
         """ retrieve and sign in the user corresponding to provider and
         validated access token
             :param provider: oauth provider id (int)
@@ -198,17 +185,15 @@ class res_users(osv.Model):
 
             This method can be overridden to add alternative signin methods.
         """
-        context = context or {}
 
         oauth_uid = validation['user_id']
-        token_obj = self.pool.get('gmail.tokens')
+        token_obj = self.env['gmail.tokens']
         token_ids = token_obj.\
-            search(cr, uid,
-                   [("oauth_uid", "=", oauth_uid),
+            search([("oauth_uid", "=", oauth_uid),
                     ('oauth_provider_id', '=', provider)])
 
         if not token_ids:
-            if context and context.get('no_user_creation'):
+            if self._context and self._context.get('no_user_creation'):
                 return None
             state = simplejson.loads(params['state'])
             token = state.get('t')
@@ -228,26 +213,24 @@ class res_users(osv.Model):
             }
 
             try:
-                _, login, _ = self.signup(cr, uid, values, token,
-                                          context=context)
+                _, login, _ = self.signup(values, token)
             except openerp.exceptions.AccessDenied, access_denied_exception:
                 raise access_denied_exception
 
         else:
-            token_brw = token_obj.browse(cr, uid, token_ids[0],
-                                         context=context)
+            token_brw = token_ids[0]
             user = token_brw.user_id
             login = user.login
 
             token_brw.write({'oauth_access_token': params['access_token']})
         return login
 
-    def write(self, cr, uid, ids, vals, context=None):
+    @api.multi
+    def write(self, vals):
         '''
         Overwrite to create a log with the changes in user groups
         '''
-        context = context or {}
-        log_obj = self.pool.get('user.log.groups')
+        log_obj = self.env['user.log.groups']
 
         group = False
         for i in vals.keys():
@@ -256,48 +239,48 @@ class res_users(osv.Model):
                 break
 
         if group:
-            for id in ids:
-                groups = self.read(cr, uid, id, ['groups_id'], context=context)
-                log_obj.create(cr, uid,
-                               {
-                                   'name': id,
+            for record in self:
+                groups = record.read(['groups_id'])
+                groups = groups and isinstance(groups, list) and \
+                    groups[0] or groups
+                log_obj.create({
+                                   'name': record.id,
                                    'date': time.strftime('%Y-%m-%d %H:%m:%S'),
                                    'group_ids': [(6, 0,
                                                   groups.get('groups_id',
                                                              []))]
-                               }, context=context)
+                               })
 
-        return super(res_users, self).write(cr, uid, ids, vals,
-                                            context=context)
+        return super(ResUsers, self).write(vals)
 
-    def search_users_for_merge(self, cr, uid, ids, context=None):
+    @api.multi
+    def search_users_for_merge(self):
         '''
         Return a view with do the merge request
         '''
-        context = context or {}
-        context.update({'default_user_id': uid})
-        model, action_id = self.pool.get('ir.model.data').\
-            get_object_reference(cr, uid, 'auth_multi',
+        model, action_id = self.env['ir.model.data'].\
+            get_object_reference('auth_multi',
                                  'search_user_merge_action')
-        action = self.pool.get('ir.actions.act_window').read(cr, uid,
-                                                             action_id, [],
-                                                             context)
-        action.update({'context': context})
+        action = self.env['ir.actions.act_window'].\
+            with_context({'default_user_id': self._uid}).\
+            browse(action_id).\
+            read([])
+        copy_dict = dict(self._context).update({'default_user_id': self._uid})
+        action = action[0]
+        action.update({'context': copy_dict})
 
         return action
 
 
-class user_log_groups(osv.Model):
+class UserLogGroups(models.Model):
 
     _name = 'user.log.groups'
 
-    _columns = {
-        'name': fields.many2one('res.users', 'User',
-                                help='Users with changes in their groups'),
-        'date': fields.datetime('Date',
-                                help='Date of last change in the groups'),
-        'group_ids': fields.many2many('res.groups',
-                                      'log_groups_users_rel',
-                                      'uid', 'gid',
-                                      'Groups')
-    }
+    name = fields.Many2one('res.users', 'User',
+                           help='Users with changes in their groups')
+    date = fields.Datetime('Date',
+                           help='Date of last change in the groups')
+    group_ids = fields.Many2many('res.groups',
+                                 'log_groups_users_rel',
+                                 'uid', 'gid',
+                                 'Groups')

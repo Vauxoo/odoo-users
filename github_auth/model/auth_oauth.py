@@ -1,13 +1,11 @@
-from openerp.osv import osv, fields
+from openerp import models, fields
 
 
-class auth_oauth_provider(osv.osv):
+class AuthOauthProvider(models.Model):
     """"""
 
     _inherit = 'auth.oauth.provider'
 
-    _columns = {
-        'url_get_token': fields.char('URL to get Token',
-                                     help='URL used to get the user'
-                                     ' token in github'),
-    }
+    url_get_token = fields.Char('URL to get Token',
+                                help='URL used to get the user'
+                                ' token in github')

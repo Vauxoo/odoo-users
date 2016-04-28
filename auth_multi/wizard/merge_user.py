@@ -19,84 +19,71 @@
 #
 ##############################################################################
 
-from openerp.osv import osv, fields
-from openerp.tools.translate import _
 import random
-from openerp import SUPERUSER_ID
-from openerp import tools
+from openerp import SUPERUSER_ID, tools, models, api, _, fields
+from openerp.exceptions import Warning as UserError
 from openerp.addons.email_template.email_template import mako_template_env
+from openerp.tools.safe_eval import safe_eval
 import re
 
 
-class merge_user_for_login_line(osv.Model):
+class MergeUserForLoginLine(models.Model):
     _name = 'merge.user.for.login.line'
 
-    _columns = {
-
-        'same_email': fields.boolean('Same Email',
-                                     help='To identifed if this '
-                                     'line has the same email'),
-        'user_id': fields.many2one('res.users', 'Main User',
-                                   help='Main users, result of all '
-                                   'process'),
-        'login': fields.many2one('merge.user.for.login', 'Login'),
-        'authorized': fields.boolean('Authorized',
-                                     help='True if this line was authorized'),
-
-    }
-    _defaults = {
-        'authorized': False
-    }
+    same_email = fields.Boolean('Same Email',
+                                help='To identifed if this '
+                                'line has the same email')
+    user_id = fields.Many2one('res.users', 'Main User',
+                              help='Main users, result of all '
+                                   'process')
+    login = fields.Many2one('merge.user.for.login', 'Login')
+    authorized = fields.Boolean('Authorized',
+                                help='True if this line was authorized')
 
 
-class merge_user_for_login(osv.Model):
+class MergeUserForLogin(models.Model):
     _name = 'merge.user.for.login'
     _description = 'Merge Login'
 
-    _columns = {
-
-        'executed': fields.boolean('Excecuted',
-                                   help='True if this line was merged'),
-        'message': fields.text('Message', help='Info about search'),
-        'search_c': fields.char('Criterial',
-                                help='Name or  email to search'),
-
-        'user_id': fields.many2one('res.users', 'Main User',
-                                   help='Main users, result of all '
-                                        'process'),
-        'user_ids': fields.one2many('merge.user.for.login.line',
-                                    'login', string='User to merge',
-                                    help='User will be merged'),
-        'type': fields.selection([('name', 'Name'),
-                                  ('email', 'Email')],
-                                 'Search Type',
-                                 help='Criterial search to '
-                                 'determinate if an user is duplicated'),
-        'access_token': fields.char('Access Token'),
-    }
-
-    _defaults = {
-        'type': 'email'
-    }
+    executed = fields.Boolean('Excecuted',
+                              help='True if this line was merged')
+    message = fields.Text('Message', help='Info about search')
+    search_c = fields.Char('Criterial',
+                           help='Name or  email to search')
+    user_id = fields.Many2one('res.users', 'Main User',
+                              default=lambda self: self.env.user,
+                              help='Main users, result of all '
+                              'process')
+    user_ids = fields.One2many('merge.user.for.login.line',
+                               'login', string='User to merge',
+                               help='User will be merged')
+    type = fields.Selection([('name', 'Name'),
+                             ('email', 'Email')],
+                            'Search Type',
+                            default='email',
+                            help='Criterial search to '
+                            'determinate if an user is duplicated')
+    access_token = fields.Char('Access Token')
 
     _rec_name = 'access_token'
 
-    def random_token(self, cr, uid, context=None):
+    @api.model
+    def random_token(self):
         '''
         Generates an ID to identify each one of record created
         return the strgin with record ID
         '''
-        context = context or {}
         # the token has an entropy of about 120 bits (6 bits/char * 20 chars)
         chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZab'\
             'cdefghijklmnopqrstuvwxyz0123456789'
         token = ''.join(random.choice(chars) for i in xrange(20))
-        if self.search(cr, uid, [('access_token', '=', token)]):
-            return self.random_token(cr, uid)
+        if self.search([('access_token', '=', token)]):
+            return self.random_token()
         else:
             return token
 
-    def change_gmail_fields(self, cr, uid, ids, context=None):
+    @api.multi
+    def change_gmail_fields(self):
         '''
         Originally for do login with google, we use only 3 fields that allow to
         login with one
@@ -107,32 +94,28 @@ class merge_user_for_login(osv.Model):
         multiple gmail accounts
 
         '''
-        context = context or {}
-        tokens_obj = self.pool.get('gmail.tokens')
-        user_obj = self.pool.get('res.users')
-        user_ids = user_obj.search(cr, uid, [], context=context)
-        for user_brw in user_obj.browse(cr, uid, user_ids, context=context):
-            if not tokens_obj.search(cr, uid,
-                                     [('oauth_provider_id', '=',
+        tokens_obj = self.env['gmail.tokens']
+        user_obj = self.env['res.users']
+        user_ids = user_obj.search([])
+        for user_brw in user_ids:
+            if not tokens_obj.search([('oauth_provider_id', '=',
                                        user_brw.oauth_provider_id and
-                                         user_brw.oauth_provider_id.id),
+                                       user_brw.oauth_provider_id.id),
                                       ('oauth_uid', '=', user_brw.oauth_uid),
-                                      ('user_id', '=', user_brw.id)],
-                                     context=context):
+                                      ('user_id', '=', user_brw.id)]):
                 user_brw.write({
                     'gmail_tokens':
                     [(0, 0,
-                      {
-                          'name': user_brw.login,
-                          'oauth_provider_id': user_brw.oauth_provider_id and
-                          user_brw.oauth_provider_id.id,
-                          'oauth_uid': user_brw.oauth_uid,
-                          'oauth_access_token': user_brw.oauth_access_token})]
+                      {'name': user_brw.login,
+                       'oauth_provider_id': (user_brw.oauth_provider_id and
+                                             user_brw.oauth_provider_id.id),
+                       'oauth_uid': user_brw.oauth_uid,
+                       'oauth_access_token': user_brw.oauth_access_token})]
                 })
         return True
 
-    def send_emails(self, cr, uid, main_id, user_id, action, res_id,
-                    context=None):
+    @api.model
+    def send_emails(self, main_id, user_id, action, res_id):
         '''
         Send an email to ask permission to do merge with users that have the
         same email account
@@ -140,34 +123,31 @@ class merge_user_for_login(osv.Model):
         @param action_id: String with the token of the record created
         @param res_id: Id of record created to do merge
         '''
-        mail_mail = self.pool.get('mail.mail')
-        partner_obj = self.pool.get('res.partner')
-        user_obj = self.pool.get('res.users')
-        user = user_obj.browse(cr, uid, user_id)
-        main_user = user_obj.browse(cr, uid, main_id, context=context)
-        data_obj = self.pool.get('ir.model.data')
-        url = partner_obj.\
-            _get_signup_url_for_action(cr, user.id,
-                                       [user.partner_id.id],
-                                       action='',
+        mail_mail = self.env['mail.mail']
+        partner_obj = self.env['res.partner'].sudo()
+        user_obj = self.env['res.users'].sudo()
+        user = user_obj.browse(user_id)
+        main_user = user_obj.browse(main_id)
+        data_obj = self.env['ir.model.data']
+        url = partner_obj.browse(user.partner_id.id).\
+            _get_signup_url_for_action(action='',
                                        res_id=res_id,
-                                       model='merge.user.for.login',
-                                       context=context)[user.partner_id.id]
-        base_url = self.pool.get('ir.config_parameter').\
-            get_param(cr, uid, 'web.base.url', default='', context=context)
+                                       model='merge.user.for.login',).\
+            get(user.partner_id.id)
+        base_url = self.env['ir.config_parameter'].\
+            get_param('web.base.url', default='')
         url = '%s/do_merge/execute_merge?token=%s' % (base_url, action)
-        if not user.email:
-            raise osv.except_osv(_('Email Required'),
-                                 _('The current user must have an '
-                                   'email address configured in '
-                                   'User Preferences to be able '
-                                   'to send outgoing emails.'))
+        if not user.login:
+            raise UserError(_('Email Required'),
+                            _('The current user must have an '
+                              'email address configured in '
+                              'User Preferences to be able '
+                              'to send outgoing emails.'))
 
-        # TODO: also send an HTML version of this mail
-        mail_ids = []
-        email_to = user.email
+        #  TODO: also send an HTML version of this mail
+        email_to = user.login
         subject = user.name
-        template_obj = data_obj.get_object(cr, uid, 'auth_multi',
+        template_obj = data_obj.get_object('auth_multi',
                                            'merge_proposal_template')
         body = template_obj.body_html
         body_dict = {
@@ -188,84 +168,91 @@ class merge_user_for_login(osv.Model):
         }
         template = mako_template_env.from_string(tools.ustr(body))
         body = template.render(body_dict)
-        mail_ids.append(mail_mail.create(cr, uid, {
-            'email_from': user.email,
+        mail_mail.create({
+            'email_from': user.login,
             'email_to': email_to,
             'subject': subject,
-            'body_html':  body}, context=context))
+            'body_html':  body}).send()
         # force direct delivery, as users expect instant notification
-        mail_mail.send(cr, uid, mail_ids, context=context)
         return True
 
-    def do_pre_merge(self, cr, uid, ids, context=None):
-        context = context or {}
-        user_obj = self.pool.get('res.users')
-        user_ids = user_obj.search(cr, uid, [], context=context)
-        wzr_brw = self.browse(cr, uid, ids[0], context=context)
+    @api.multi
+    def do_pre_merge(self):
+        user_obj = self.env['res.users']
+        user_ids = user_obj.search([])
+        wzr_brw = self
 
-        for user_brw in user_obj.browse(cr, uid, user_ids, context=context):
-            users = user_obj.search(cr, uid,
-                                    [('%s' % wzr_brw.type, 'ilike',
-                                      eval('user_brw.%s' % wzr_brw.type))],
-                                    context=context)
+        for user_brw in user_ids:
+            users = user_obj.\
+                search([('%s' % wzr_brw.type, 'ilike',
+                         safe_eval('user_brw.%s' % wzr_brw.type))])
             if users:
-                token = self.random_token(cr, uid)
-                self.create(cr, uid,
-                            {
-                                'access_token': token,
-                                'user_id': users[0],
-                                'user_ids': [(0, 0,
-                                              {'user_id': i})
-                                             for i in users]
-                            })
-                self.send_emails(cr, uid, uid, users[0], token)
+                token = self.random_token()
+                self.create({'access_token': token,
+                             'user_id': users[0],
+                             'user_ids': [(0, 0,
+                                           {'user_id': i})
+                                          for i in users]})
+                self.send_emails(self._uid, users.ids[0], token)
         return True
 
-    def do_pre_merge_from_users(self, cr, uid, ids, context=None):
+    @api.multi
+    def do_pre_merge_from_users(self):
         '''
         Send email to ask permission to do merge or do merge directly if the
         email of user to merge
         is the same of the main user
         '''
-        context = context or {}
-        user_obj = self.pool.get('res.users')
-        wzr_brw = self.browse(cr, SUPERUSER_ID, ids[0], context=context)
-        parent_brw = user_obj.browse(cr, SUPERUSER_ID, wzr_brw.user_id.id,
-                                     context=context)
+        user_obj = self.env['res.users']
+        wzr_brw = self.sudo()
+        parent_brw = user_obj.sudo(SUPERUSER_ID).browse(wzr_brw.user_id.id)
+        body = '''
+  <div cellspacing="10" style="font-family:verdana;background-color:#C6DEFF;">
+      <div>Result:</div>
+      <div>${r.get('message')}</div>
+      <div>${r.get('request')}</div>
+  </div>
+        '''
+        template = mako_template_env.from_string(tools.ustr(body))
         if wzr_brw.user_ids:
             if all([((i.user_id.login == parent_brw.login) or
                      (i.user_id.email == parent_brw.email)) and
                     True or False for i in wzr_brw.user_ids]):
-                fuse_obj = self.pool.get('merge.fuse.wizard')
+                fuse_obj = self.env['merge.fuse.wizard'].sudo()
                 user_ids = [i.user_id.id for i in wzr_brw.user_ids]
                 user_ids.insert(0, parent_brw.id)
-                context.update({'active_model': 'res.users',
-                                'active_ids': user_ids})
-                fuse_obj.create(cr, SUPERUSER_ID, {}, context=context)
+                fuse_obj.\
+                    with_context({'active_model': 'res.users',
+                                  'active_ids': user_ids}).create({})
                 wzr_brw.write({
                     'executed': True
                 })
-                cr.commit()
-                context.update({'default_message':
-                                ('''Proccess finished users merged''')})
-                self.return_action(cr, uid, ids, context=context)
+                self._cr.commit()
+                body = template.\
+                    render({'r':
+                            {'message': _('Process Completed'),
+                             'request': _('Proccess finished users merged')}})
+                self.update({'message': body})
             else:
-                token = self.random_token(cr, SUPERUSER_ID)
+                token = self.sudo().random_token()
                 wzr_brw.write({
                     'access_token': token,
-                    'user_ids': [(0, 0,
-                                 {'user_id': wzr_brw.user_id.id})]
+                    'user_ids': [(0, 0, {'user_id': wzr_brw.user_id.id})]
                 })
-                cr.commit()
+                self._cr.commit()
+                user_mails = []
                 for i in wzr_brw.user_ids:
-                    self.send_emails(cr, SUPERUSER_ID, uid, i.user_id.id,
-                                     token, wzr_brw.id)
-                self.send_emails(cr, SUPERUSER_ID, uid, wzr_brw.user_id.id,
-                                 token, wzr_brw.id)
-        return True
+                    if i.user_id.id not in user_mails:
+                        self.send_emails(self._uid, i.user_id.id, token,
+                                         wzr_brw.id)
+                    user_mails.append(i.user_id.id)
+                if wzr_brw.user_id.id not in user_mails:
+                    self.send_emails(self._uid, wzr_brw.user_id.id, token,
+                                     wzr_brw.id)
 
-    def onchange_search(self, cr, uid, ids, _type, param, user, lines,
-                        context=None):
+    @api.onchange('user_id', 'type', 'search_c', 'user_ids')
+    @api.multi
+    def onchange_search(self):
         '''
         Search user with the same email sent from view and return the result or
         a message
@@ -276,10 +263,8 @@ class merge_user_for_login(osv.Model):
         @user: User ID of the main user
         return all user found and a messagen reporting it
         '''
-        context = context or {}
-        user_obj = self.pool.get('res.users')
-        line_obj = self.pool.get('merge.user.for.login.line')
-        parent_brw = user_obj.browse(cr, SUPERUSER_ID, user, context=context)
+        user_obj = self.env['res.users']
+        parent_brw = self.user_id
         user = []
         users = []
         res = {'value': {}}
@@ -292,108 +277,94 @@ class merge_user_for_login(osv.Model):
         '''
         template = mako_template_env.from_string(tools.ustr(body))
         # pylint: disable=W1401
-        if param and _type == 'email' and \
-                re.match("[^@]+@[^@]+\.[^@]+", param) or param:
-            users += user_obj.search(cr, SUPERUSER_ID, [('%s' % _type, '=',
-                                                         param)],
-                                     context=context)
-        if line_obj.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
-                                              ('login.executed', '=', True)],
-                           context=context) or \
-                self.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
-                            ('executed', '=', True)], context=context):
-            res['value'] = {
-                'message': _('This user is being used in another '
-                             'merge that is not validated yet')}
-            return res
-        old_token = self.search(cr, SUPERUSER_ID, [('user_id', 'in', users),
-                                ('executed', '=', False)], context=context)
+        if self.search_c and self.type == 'email' and \
+                re.match("[^@]+@[^@]+\.[^@]+", self.search_c) or self.search_c:
+            users += user_obj.sudo().\
+                search([('%s' % self.type, '=', self.search_c)]).ids
+        # if line_obj.sudo().search([('user_id', 'in', users),
+        #                            ('login.executed', '=', True)]) or \
+        #         self.sudo().search([('user_id', 'in', users),
+        #                     ('executed', '=', True)]):
+        #     res['value'] = {
+        #         'message': _('This user is being used in another '
+        #                      'merge that is not validated yet')}
+        #     self.update(res.get('value'))
+        #     return res
+        old_token = self.sudo().search([('user_id', 'in', users),
+                                        ('executed', '=', False)])
         if old_token:
-            self.unlink(cr, uid, old_token)
+            old_token.unlink()
 
         users = list(set(users))
         if users:
             user += [{'user_id': i.id,
-                      'same_email': i.email == parent_brw.email and
-                      True or False}
-                     for i in user_obj.browse(cr, SUPERUSER_ID, users)]
+                      'same_email': (i.email == parent_brw.email and
+                                     True or False)}
+                     for i in user_obj.sudo().browse(users)]
             body = template.render({'r': {'message': _('User Found'),
-                                   'request': _('Please press the Send '
-                                                'Mail button to send '
-                                                'the Merge request '
-                                                'for this user')
-                                          }
-                                    })
+                                          'request': _('Please press the Send '
+                                                       'Mail button to send '
+                                                       'the Merge request '
+                                                       'for this user')}})
             res['value'] = {'message': body}
             res['value'].update({'user_ids': user})
         else:
-            if param:
-                body = template.render({'r': {'message': _('User not Found'),
-                                       'request': _('The email placed in '
-                                                    'the criterial field '
-                                                    'was not found, please '
-                                                    'check it and try again')
-                                              }
-                                        })
+            if self.search_c:
+                body = template.\
+                    render({'r': {'message': _('User not Found'),
+                                  'request': _('The email placed in '
+                                               'the criterial field '
+                                               'was not found, please '
+                                               'check it and try again')}})
                 res['value'] = {'message': body}
 
-        if lines:
-            for i in lines:
+        if self.user_ids:
+            for i in self.user_ids:
                 if i and i[0] == 0:
                     if not i[2].get('user_id', 0) in users:
                         user += [i[2]]
             res['value'].update({'user_ids': user})
 
-        return res
+        self.update(res.get('value'))
 
-    def execute_merge(self, cr, uid, ids, context=None):
+    @api.multi
+    def execute_merge(self):
         """
         Execute the merge if all users involved allow this change else show a
         message reporting
         why you can't do it
         """
-        context = context or {}
-        fuse_obj = self.pool.get('merge.fuse.wizard')
-        token = context.get('record', False)
-        user_obj = self.pool.get('res.users')
-        merge_ids = ids or self.search(cr, SUPERUSER_ID, [('access_token', '=',
-                                                           token)],
-                                       context=context)
-        merge_brw = merge_ids and self.browse(cr, SUPERUSER_ID, merge_ids[0],
-                                              context=context)
-        parent_brw = user_obj.browse(cr, SUPERUSER_ID, merge_brw.user_id.id,
-                                     context=context)
+        fuse_obj = self.env['merge.fuse.wizard']
+        token = self._context.get('record', False)
+        user_obj = self.env['res.users'].sudo()
+        merge_ids = self._ids and self or \
+            self.sudo().search([('access_token', '=', token)])
+        merge_brw = merge_ids
+        parent_brw = user_obj.browse(merge_brw.user_id.id)
         anony = True
         if not merge_brw.executed:
             for user in merge_brw.user_ids:
-                if user.user_id.id == uid:
+                if user.user_id.id == self._uid:
                     anony = False
                     user.write({'authorized': True})
-                    cr.commit()
-                elif parent_brw.id == uid:
+                    self._cr.commit()
+                elif parent_brw.id == self._uid:
                     anony = False
             if anony:
                 return (False, 'Login')
-            merge_brw = merge_ids and \
-                self.browse(cr, SUPERUSER_ID, merge_ids[0], context=context)
+            merge_brw = merge_ids and merge_ids[0]
             if all([i.authorized for i in merge_brw.user_ids]):
-                fuse_obj = self.pool.get('merge.fuse.wizard')
                 user_ids = [i.user_id.id for i in merge_brw.user_ids]
                 user_ids.insert(0, parent_brw.id)
-                context.update({'active_model': 'res.users',
-                                'active_ids': user_ids})
-                fuse_obj.create(cr, SUPERUSER_ID, {}, context=context)
+                fuse_obj.sudo().with_context({'active_model': 'res.users',
+                                              'active_ids': user_ids}).\
+                    create({})
                 merge_brw.write({
                     'executed': True
                 })
-                cr.commit()
-                context = {'default_message': _('''Proccess finished
-                                                users merged''')}
+                self._cr.commit()
                 return True
             else:
-                context = {'default_message': _('You need permmision of '
-                                                'others users to do '
-                                                'this merge')}
                 return False
 
         return False
