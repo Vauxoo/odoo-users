@@ -2,7 +2,7 @@
 <openerp>
     <data noupdate="1">
 
-        <record id="merge_proposal_template" model="email.template">
+        <record id="merge_proposal_template" model="mail.template">
             <field name="name">Merge Proposal</field>
             <field name="email_from">info@vauxoo.com</field>
             <field name="subject">Merge Proposal</field>

@@ -11,7 +11,7 @@ openerpweb = http
 class auth_muti_login(openerpweb.Controller):
 
     @http.route(['/do_merge/execute_merge'],
-                type='http', auth="public", website=True, multilang=True)
+                type='http', auth="user", website=True, multilang=True)
     def execute_merge(self, **post):
         cr, uid, context = request.cr, request.uid, request.context
         uid = SUPERUSER_ID
@@ -53,7 +53,7 @@ class auth_muti_login(openerpweb.Controller):
         return request.render("auth_multi.auth_multi_login", values)
 
     @http.route(['/do_merge/apply_merge'], type='http',
-                auth="public", website=True, multilang=True)
+                auth="user", website=True, multilang=True)
     def apply_merge(self, **post):
         cr, uid, context = request.cr, request.uid, request.context
         values = {}
@@ -79,7 +79,8 @@ class auth_muti_login(openerpweb.Controller):
 
         query = {'redirect': u'do_merge/execute_merge?token=%s'
                  % post.get('token')}
-        return (type(result) == tuple) and http.local_redirect('/web/login', query=query) or \
+        return (type(result) == tuple) and \
+            http.local_redirect('/web/login', query=query) or \
             result and \
             http.local_redirect('/web/login', query={'redirect': '/'}) or \
             request.render("auth_multi.auth_multi_token_used", values)

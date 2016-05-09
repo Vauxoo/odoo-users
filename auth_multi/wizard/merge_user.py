@@ -22,7 +22,7 @@
 import random
 from openerp import SUPERUSER_ID, tools, models, api, _, fields
 from openerp.exceptions import Warning as UserError
-from openerp.addons.email_template.email_template import mako_template_env
+from openerp.addons.mail.models.mail_template import mako_template_env
 from openerp.tools.safe_eval import safe_eval
 import re
 

@@ -78,6 +78,7 @@
                                 </tr>
                           </t>
                   </table>
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                          Click here to apply  <button aling='center' class="btn btn-success btn-xs img-rounded">Apply</button>
                </form>
                 </div>

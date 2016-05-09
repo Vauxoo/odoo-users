@@ -15,7 +15,7 @@
                     <notebook colspan="4">
                         <page string="Fields" attrs="{'readonly':[('model_id','=',False)]}">
                             <field name="field_ids" colspan="4" nolabel="1"
-                                domain="[('ttype', 'not in', ['one2many', 'refenrence', 'function']), ('model_id', 'in', eval(model_list))]" 
+                                domain="[('ttype', 'not in', ['one2many', 'refenrence', 'function']), ('model_id', 'in', eval(model_list))]"
                                 attrs="{'readonly':[('model_id','=',False)]}"/>
                         </page>
                         <page string="Advance">
@@ -72,7 +72,7 @@
             <field name="act_window_id" ref="action_merge_object_form"/>
         </record>
 
-        <menuitem id="menu_merge_editing" name="merge Editing" parent="base.menu_config" sequence="6"/>
+        <menuitem id="menu_merge_editing" name="merge Editing" parent="base.menu_reporting_config" sequence="6"/>
 
         <menuitem id="menu_merge_object_view" action="action_merge_object_form" parent="menu_merge_editing"/>
 
