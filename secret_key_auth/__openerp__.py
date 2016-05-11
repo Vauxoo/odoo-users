@@ -20,16 +20,10 @@
 ##############################################################################
 {
     'name': 'Client Secret Auth',
-    'version': '0.1',
+    'version': '8.0.0.1.0',
     'author': 'Vauxoo',
+    'license': 'AGPL-3',
     'category': 'Hidden',
-    'description': """
-Client Secret Auth
-===================
-
-This adds the client_secret field used in some
-methods of authentication by oauth
-    """,
     'website': 'http://www.vauxoo.com',
     'images': [],
     'depends': [
@@ -39,18 +33,7 @@ methods of authentication by oauth
     'data': [
         'view/auth_oauth_view.xml',
     ],
-    'js': [
-    ],
-    'qweb': [
-    ],
-    'css': [
-    ],
-    'demo': [
-    ],
-    'test': [
-    ],
     'installable': True,
     'auto_install': False,
     'web_preload': False,
 }
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

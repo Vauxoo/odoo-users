@@ -1,14 +1,14 @@
+# -*- coding: utf-8 -*-
 from openerp import http
 from openerp.http import request
 from openerp import SUPERUSER_ID
 
-openerpweb = http
-
-
 # ----------------------------------------------------------
 # Controller
 # ----------------------------------------------------------
-class auth_muti_login(openerpweb.Controller):
+
+
+class AuthMutiLogin(http.Controller):
 
     @http.route(['/do_merge/execute_merge'],
                 type='http', auth="user", website=True, multilang=True)
@@ -79,7 +79,7 @@ class auth_muti_login(openerpweb.Controller):
 
         query = {'redirect': u'do_merge/execute_merge?token=%s'
                  % post.get('token')}
-        return (type(result) == tuple) and \
+        return isinstance(result, tuple) and \
             http.local_redirect('/web/login', query=query) or \
             result and \
             http.local_redirect('/web/login', query={'redirect': '/'}) or \

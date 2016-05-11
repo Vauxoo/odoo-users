@@ -72,9 +72,9 @@
             <field name="act_window_id" ref="action_merge_object_form"/>
         </record>
 
-        <menuitem id="menu_merge_editing" name="merge Editing" parent="base.menu_reporting_config" sequence="6"/>
+        <!-- <menuitem id="menu_merge_editing" name="Merge Editing" parent="base.menu_custom" sequence="6"/> -->
 
-        <menuitem id="menu_merge_object_view" action="action_merge_object_form" parent="menu_merge_editing"/>
+        <!-- <menuitem id="menu_merge_object_view" action="action_merge_object_form" parent="menu_merge_editing"/> -->
 
     </data>
 </openerp>

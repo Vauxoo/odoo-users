@@ -20,25 +20,10 @@
 ##############################################################################
 {
     'name': 'Github Auth',
-    'version': '0.1',
+    'version': '8.0.0.1.0',
+    'license': 'AGPL-3',
     'author': 'Vauxoo',
     'category': 'Hidden',
-    'description': """
-Auth wit Github API
-===================
-
-When you configure this, please use this configuration for the new oAuth
-provider:
-
-.. image:: /github_auth/static/src/doc/odoo_config.png
-
-And use this configuration on github:
-
-.. image:: /github_auth/static/src/doc/github_config.png
-
-Note that the client_id and key are provided by github.
-
-    """,
     'website': 'http://www.vauxoo.com',
     'images': [],
     'depends': [
@@ -64,4 +49,3 @@ Note that the client_id and key are provided by github.
     'auto_install': False,
     'web_preload': False,
 }
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

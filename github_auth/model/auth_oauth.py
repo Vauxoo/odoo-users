@@ -1,8 +1,8 @@
+# coding: utf-8
 from openerp import models, fields
 
 
 class AuthOauthProvider(models.Model):
-    """"""
 
     _inherit = 'auth.oauth.provider'
 

@@ -20,10 +20,11 @@
 ##############################################################################
 {
     'name': 'Auth Multi Login',
-    'version': '0.1',
+    'version': '8.0.0.1.0',
     'author': 'Vauxoo',
     'category': 'Hidden',
     'website': 'http://www.vauxoo.com',
+    'license': 'AGPL-3',
     'depends': [
         'web',
         'base',
@@ -39,18 +40,7 @@
         'view/auth_view.xml',
         'wizard/merge_user_view.xml',
     ],
-    'js': [
-    ],
-    'qweb': [
-    ],
-    'css': [
-    ],
-    'demo': [
-    ],
-    'test': [
-    ],
     'installable': True,
     'auto_install': False,
     'web_preload': False,
 }
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

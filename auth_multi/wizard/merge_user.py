@@ -69,10 +69,9 @@ class MergeUserForLogin(models.Model):
 
     @api.model
     def random_token(self):
-        '''
-        Generates an ID to identify each one of record created
+        """ Generates an ID to identify each one of record created
         return the strgin with record ID
-        '''
+        """
         # the token has an entropy of about 120 bits (6 bits/char * 20 chars)
         chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZab'\
             'cdefghijklmnopqrstuvwxyz0123456789'
@@ -84,16 +83,14 @@ class MergeUserForLogin(models.Model):
 
     @api.multi
     def change_gmail_fields(self):
-        '''
-        Originally for do login with google, we use only 3 fields that allow to
+        """ Originally for do login with google, we use only 3 fields that allow to
         login with one
         gmail account. But now we can do login with multiple gmail accounts,
         for that, this method
         change the values in old fields and sets these in the new fields used
         to do login with
         multiple gmail accounts
-
-        '''
+        """
         tokens_obj = self.env['gmail.tokens']
         user_obj = self.env['res.users']
         user_ids = user_obj.search([])
@@ -116,13 +113,12 @@ class MergeUserForLogin(models.Model):
 
     @api.model
     def send_emails(self, main_id, user_id, action, res_id):
-        '''
-        Send an email to ask permission to do merge with users that have the
+        """ Send an email to ask permission to do merge with users that have the
         same email account
         @param user_id: User id that receives the notification mail
         @param action_id: String with the token of the record created
         @param res_id: Id of record created to do merge
-        '''
+        """
         mail_mail = self.env['mail.mail']
         partner_obj = self.env['res.partner'].sudo()
         user_obj = self.env['res.users'].sudo()
@@ -182,6 +178,7 @@ class MergeUserForLogin(models.Model):
         user_ids = user_obj.search([])
         wzr_brw = self
 
+        # pylint: disable=W0612
         for user_brw in user_ids:
             users = user_obj.\
                 search([('%s' % wzr_brw.type, 'ilike',
@@ -198,11 +195,10 @@ class MergeUserForLogin(models.Model):
 
     @api.multi
     def do_pre_merge_from_users(self):
-        '''
-        Send email to ask permission to do merge or do merge directly if the
+        """ Send email to ask permission to do merge or do merge directly if the
         email of user to merge
         is the same of the main user
-        '''
+        """
         user_obj = self.env['res.users']
         wzr_brw = self.sudo()
         parent_brw = user_obj.sudo(SUPERUSER_ID).browse(wzr_brw.user_id.id)
@@ -227,7 +223,6 @@ class MergeUserForLogin(models.Model):
                 wzr_brw.write({
                     'executed': True
                 })
-                self._cr.commit()
                 body = template.\
                     render({'r':
                             {'message': _('Process Completed'),
@@ -239,7 +234,6 @@ class MergeUserForLogin(models.Model):
                     'access_token': token,
                     'user_ids': [(0, 0, {'user_id': wzr_brw.user_id.id})]
                 })
-                self._cr.commit()
                 user_mails = []
                 for i in wzr_brw.user_ids:
                     if i.user_id.id not in user_mails:
@@ -253,8 +247,7 @@ class MergeUserForLogin(models.Model):
     @api.onchange('user_id', 'type', 'search_c', 'user_ids')
     @api.multi
     def onchange_search(self):
-        '''
-        Search user with the same email sent from view and return the result or
+        """ Search user with the same email sent from view and return the result or
         a message
         @type: String with the field used to find user, this may be name or
         email
@@ -262,7 +255,7 @@ class MergeUserForLogin(models.Model):
         Criterial
         @user: User ID of the main user
         return all user found and a messagen reporting it
-        '''
+        """
         user_obj = self.env['res.users']
         parent_brw = self.user_id
         user = []
@@ -329,8 +322,7 @@ class MergeUserForLogin(models.Model):
 
     @api.multi
     def execute_merge(self):
-        """
-        Execute the merge if all users involved allow this change else show a
+        """ Execute the merge if all users involved allow this change else show a
         message reporting
         why you can't do it
         """
@@ -347,7 +339,6 @@ class MergeUserForLogin(models.Model):
                 if user.user_id.id == self._uid:
                     anony = False
                     user.write({'authorized': True})
-                    self._cr.commit()
                 elif parent_brw.id == self._uid:
                     anony = False
             if anony:
@@ -355,14 +346,16 @@ class MergeUserForLogin(models.Model):
             merge_brw = merge_ids and merge_ids[0]
             if all([i.authorized for i in merge_brw.user_ids]):
                 user_ids = [i.user_id.id for i in merge_brw.user_ids]
-                user_ids.insert(0, parent_brw.id)
-                fuse_obj.sudo().with_context({'active_model': 'res.users',
-                                              'active_ids': user_ids}).\
+                fuse_id = fuse_obj.sudo().\
+                    with_context({'active_model': 'res.users',
+                                  'active_id': parent_brw.id,
+                                  'active_ids': user_ids}).\
                     create({})
+                fuse_id.merge_records('res_users', parent_brw.id, user_ids,
+                                      'res.users')
                 merge_brw.write({
                     'executed': True
                 })
-                self._cr.commit()
                 return True
             else:
                 return False

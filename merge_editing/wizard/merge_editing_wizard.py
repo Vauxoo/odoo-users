@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
@@ -20,22 +20,22 @@
 #
 ##############################################################################
 
-from openerp import api, models
+from openerp import api, models, tools
 from lxml import etree
-from openerp import tools
+import re
 
 
-class merge_fuse_wizard(models.TransientModel):
+class MergeFuseWizard(models.TransientModel):
     _name = 'merge.fuse.wizard'
 
     def fields_view_get(self, cr, uid, view_id=None, view_type='form',
                         context=None, toolbar=False, submenu=False):
-        result = super(merge_fuse_wizard, self).fields_view_get(cr, uid,
-                                                                view_id,
-                                                                view_type,
-                                                                context,
-                                                                toolbar,
-                                                                submenu)
+        result = super(MergeFuseWizard, self).fields_view_get(cr, uid,
+                                                              view_id,
+                                                              view_type,
+                                                              context,
+                                                              toolbar,
+                                                              submenu)
         if context.get('merge_fuse_object'):
             merge_object = self.pool.get('merge.object')
             fuse_data = merge_object.browse(cr, uid,
@@ -73,100 +73,106 @@ class merge_fuse_wizard(models.TransientModel):
             result['fields'] = all_fields
         return result
 
-    def create(self, cr, uid, vals, context=None):
-        if context.get('active_model') and context.get('active_ids'):
-            active_ids = context.get('active_ids')
-            base_id = active_ids[0]
-            model_obj = self.pool.get(context.get('active_model'))
-            models_obj = self.pool.get('ir.model.fields')
-            property_obj = self.pool.get('ir.property')
-            related_ids = models_obj.search(cr, uid,
-                                            [('ttype', 'in',
-                                              ('many2one', 'one2many',
-                                               'many2many')),
-                                             ('relation', '=',
-                                              str(context.
-                                                  get('active_model')))])
-            # get the models related to the one to fuse
-            can = True
-            for related in models_obj.browse(cr, uid, related_ids):
-                cr.commit()
-                to_unlink = []
-                target_ids = []
-                target_model = self.pool.get(related.model)
-                field_obj = target_model and target_model.\
-                    _fields.get(related.name)
-                if field_obj.company_dependent:
-                    property_ids = []
-                    for field_id in active_ids:
-                        v_reference = '%s,%s' % (context.get('active_model'),
-                                                 field_id)
-                        property_ids += property_obj.\
-                            search(cr, uid,
-                                   [('fields_id', '=', related.id),
-                                    ('value_reference', '=', v_reference)],
-                                   context=context)
+    @api.multi
+    def merge_records(self, table, main_id, old_ids, orm_model):
+        """Method used to merge records in all tables with
+        a reference to the objects to merge
+        @param tabel: Table name of the records to merge. i.e. res_users
+        @type tabel: str or unicode
+        @param main_id: Id of the main record, this id will replace the other
+                        ids in the tables related
+        @type main_id: integer
+        @param old_ids: List  with the ids of the records to merge
+        @type old_ids: list or tuple
+        @param orm_model: Name of the model for the orm. i.e. res.users
+        @type orm_model: str or unicode
+        """
 
-                    if property_ids:
-                        v_ref = '%s,%s' % (context.get('active_model'),
-                                           base_id)
-                        property_obj.write(cr, uid, property_ids,
-                                           {'value_reference': v_ref},
-                                           context=context)
-                        continue
+        self._cr.execute('''
+DROP FUNCTION IF EXISTS merge_records(model varchar, main_id integer,
+                                      old_ids integer[], orm_model varchar);
+CREATE OR REPLACE FUNCTION merge_records(model varchar, main_id integer,
+                                         old_ids integer[], orm_model varchar)
+RETURNS float AS $$
+    DECLARE
 
-                elif field_obj.compute:
-                    if field_obj.store or field_obj.search:
-                        target_ids = target_model.search(cr, uid,
-                                                         [(related.name, 'in',
-                                                           active_ids)])
-                    else:
-                        continue
+        value_table varchar;
+        value_column varchar;
+        values RECORD;
+        proper_id integer;
+        record_id integer;
+        amount float;
+    BEGIN
+        FOR value_table, value_column IN SELECT cl1.relname as table,
+                             att1.attname as column
+                      FROM pg_constraint as con, pg_class as cl1,
+                           pg_class as cl2, pg_attribute as att1,
+                           pg_attribute as att2
+                      WHERE con.conrelid = cl1.oid
+                           AND con.confrelid = cl2.oid
+                           AND array_lower(con.conkey, 1) = 1
+                           AND con.conkey[1] = att1.attnum
+                           AND att1.attrelid = cl1.oid
+                           AND cl2.relname = model
+                           AND att2.attname = 'id'
+                           AND array_lower(con.confkey, 1) = 1
+                           AND con.confkey[1] = att2.attnum
+                           AND att2.attrelid = cl2.oid
+                           AND con.contype = 'f' LOOP
+            FOREACH record_id SLICE 0 IN ARRAY old_ids LOOP
+                proper_id := (SELECT id
+                              FROM ir_property
+                              WHERE res_id = orm_model|| ',' ||
+                                             record_id LIMIT 1);
+                IF proper_id is not null THEN
+                    UPDATE ir_property
+                    SET res_id = orm_model|| ',' || main_id
+                    WHERE res_id = orm_model|| ',' || record_id    ;
+                END IF;
+                proper_id := (SELECT id
+                            FROM ir_property
+                            WHERE value_reference = orm_model|| ',' ||
+                                    record_id LIMIT 1);
+                IF proper_id is not null THEN
+                    UPDATE ir_property
+                    SET value_reference = orm_model|| ',' || main_id
+                    WHERE value_reference = orm_model|| ',' || record_id;
+                END IF;
+                BEGIN
+                    EXECUTE 'UPDATE ' || value_table ||
+                            ' SET ' || value_column || ' = ' || main_id ||
+                            ' WHERE ' || value_column || ' = '
+                                || record_id;
+                EXCEPTION WHEN unique_violation THEN
+                    -- Ignore duplicate inserts.
+                END;
+            END LOOP;
+        END LOOP;
+        RETURN amount; END;
+    $$ LANGUAGE plpgsql;''')
+        old_ids_str = re.sub(r'^(\(|\[)', '{', str(old_ids))
+        old_ids_str = re.sub(r'(\)|\])$', '}', old_ids_str)
 
-                else:
-                    target_ids = target_model and \
-                        target_model.\
-                        search(cr, uid, [(related.name, 'in', active_ids)])
-                    if target_ids:
-                        try:
-                            if field_obj.type in ('many2many', 'one2many'):
-                                target_model.\
-                                    write(cr, uid, target_ids,
-                                          {str(related.name): [(4, base_id)]})
-                            else:
-                                target_model.write(cr, uid,
-                                                   target_ids,
-                                                   {str(related.name):
-                                                    base_id})
-                        except BaseException as e:
-                            if 'cannot update view' in e.message:
-                                continue
-                            else:
-                                can = False
-                cr.commit()
-            if can:
-                to_unlink = list(set(active_ids) - set([base_id]))
-                model_obj.unlink(cr, uid, to_unlink)
-                cr.commit()
-        result = super(merge_fuse_wizard, self).create(cr, uid, {}, context)
-        return result
+        self._cr.execute('SELECT merge_records(CAST(%s AS varchar),'
+                         '%s, %s, CAST(%s AS varchar))',
+                         (table, main_id, old_ids_str, orm_model))
 
     @api.multi
     def action_apply(self):
         return {'type': 'ir.actions.act_window_close'}
 
 
-class merge_editing_wizard(models.TransientModel):
+class MergeEditingWizard(models.TransientModel):
     _name = 'merge.editing.wizard'
 
     def fields_view_get(self, cr, uid, view_id=None, view_type='form',
                         context=None, toolbar=False, submenu=False):
-        result = super(merge_editing_wizard, self).fields_view_get(cr, uid,
-                                                                   view_id,
-                                                                   view_type,
-                                                                   context,
-                                                                   toolbar,
-                                                                   submenu)
+        result = super(MergeEditingWizard, self).fields_view_get(cr, uid,
+                                                                 view_id,
+                                                                 view_type,
+                                                                 context,
+                                                                 toolbar,
+                                                                 submenu)
         if context.get('merge_editing_object'):
             merge_object = self.pool.get('merge.object')
             editing_data = merge_object.\
@@ -275,7 +281,6 @@ class merge_editing_wizard(models.TransientModel):
                         xml_group, 'field', {
                             'name': "selection_" +
                             field.name,
-                            'colspan': '2',
                             'colspan': '2'})
                     etree.SubElement(
                         xml_group,
@@ -412,41 +417,36 @@ class merge_editing_wizard(models.TransientModel):
             root = xml_form.getroottree()
             result['arch'] = etree.tostring(root)
             result['fields'] = all_fields
-            print result
         return result
 
     def create(self, cr, uid, vals, context=None):
         if context.get('active_model') and context.get('active_ids'):
-            print "Modelo activo", context.get('active_model')
             model_obj = self.pool.get(context.get('active_model'))
-            dict = {}
+            dict_cr = {}
             for key, val in vals.items():
                 if key.startswith('selection_'):
                     split_key = key.split('_', 1)[1]
                     if val == 'set':
-                        dict.update({split_key: vals.get(split_key, False)})
+                        dict_cr.update({split_key: vals.get(split_key, False)})
                     elif val == 'remove':
-                        dict.update({split_key: False})
+                        dict_cr.update({split_key: False})
                     elif val == 'remove_m2m':
-                        dict.update({split_key: [(5, 0, [])]})
+                        dict_cr.update({split_key: [(5, 0, [])]})
                     elif val == 'add':
                         m2m_list = []
                         for m2m_id in vals.get(split_key, False)[0][2]:
                             m2m_list.append((4, m2m_id))
-                        dict.update({split_key: m2m_list})
-            if dict:
+                        dict_cr.update({split_key: m2m_list})
+            if dict_cr:
                 model_obj.write(
                     cr,
                     uid,
                     context.get('active_ids'),
-                    dict,
+                    dict_cr,
                     context)
-        result = super(merge_editing_wizard, self).create(cr, uid, {}, context)
+        result = super(MergeEditingWizard, self).create(cr, uid, {}, context)
         return result
 
     @api.multi
     def action_apply(self):
         return {'type': 'ir.actions.act_window_close'}
-
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

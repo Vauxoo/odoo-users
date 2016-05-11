@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
@@ -18,16 +18,13 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 ##############################################################################
-
-
 {
     "name": "Merge Records",
-    "version": "1.1",
+    "version": "8.0.0.1.0",
     "author": "Vauxoo",
     "category": "Tools",
     "website": "http://www.vauxoo.com",
-    "description": """
-    """,
+    'license': 'AGPL-3',
     'depends': ['base'],
     'data': [
         'security/merge_security.xml',
@@ -38,5 +35,3 @@
     'application': True,
     'auto_install': False,
 }
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

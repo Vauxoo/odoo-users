@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# coding: utf-8
 ###########################################################################
 #    Module Writen to OpenERP, Open Source Management Solution
 #
@@ -76,17 +76,15 @@ class ResUsers(models.Model):
                                   string='My Contacts',
                                   help='All my Contacts Partner')
 
-
     @api.multi
     def check_token_exist(self, values):
-        '''
-        Check if token exist with the new model that contain all token allowed
+        """Check if token exist with the new model that contain all token allowed
         by an user
         @param ids: List with user ids
         @param values: Dictionary with the values necessary to login in the
         system
         return True if the token sent in values exist else return False
-        '''
+        """
         gmail_tokens_obj = self.env['gmail.tokens']
         for user in self:
             tokens_ids = gmail_tokens_obj.\
@@ -96,20 +94,13 @@ class ResUsers(models.Model):
                         ('user_id', '=', user.id),
                         ('oauth_access_token', '=',
                          values.get('oauth_access_token'))])
-            if tokens_ids:
-                return True
-
-            else:
-                return False
-
-        return False
+            return bool(tokens_ids)
 
     @api.model
     def check_credentials(self, password):
-        '''
-        Verifies that token is allowed by the user that tries do login
+        """ Verifies that token is allowed by the user that tries do login
         @param password: String with the token sent
-        '''
+        """
         token_obj = self.env['gmail.tokens']
 
         try:
@@ -123,8 +114,7 @@ class ResUsers(models.Model):
 
     @api.model
     def _signup_create_user(self, values):
-        '''
-        Tries to create a new user but first search if any user has a email
+        """ Tries to create a new user but first search if any user has a email
         with the login that
         tries do login, if this exist verifies that has allowed the token sent
         in the method and
@@ -132,7 +122,7 @@ class ResUsers(models.Model):
         If not exist, we create a new user with the values sent
         @param values: Dictionary with the user information to search or create
         return the user id found or created
-        '''
+        """
         user_ids = self.search(['|',
                                 ('login', '=', values.get('login')),
                                 ('email', '=', values.get('login'))])
@@ -153,7 +143,6 @@ class ResUsers(models.Model):
                     })
                 values.update({'login': user_brw.login})
                 user_brw.write(values)
-                self._cr.commit()
                 return user_ids.ids[0]
 
             else:
@@ -227,9 +216,8 @@ class ResUsers(models.Model):
 
     @api.multi
     def write(self, vals):
-        '''
-        Overwrite to create a log with the changes in user groups
-        '''
+        """Overwrite to create a log with the changes in user groups
+        """
         log_obj = self.env['user.log.groups']
 
         group = False
@@ -244,26 +232,24 @@ class ResUsers(models.Model):
                 groups = groups and isinstance(groups, list) and \
                     groups[0] or groups
                 log_obj.create({
-                                   'name': record.id,
-                                   'date': time.strftime('%Y-%m-%d %H:%m:%S'),
-                                   'group_ids': [(6, 0,
-                                                  groups.get('groups_id',
-                                                             []))]
-                               })
+                    'name': record.id,
+                    'date': time.strftime('%Y-%m-%d %H:%m:%S'),
+                    'group_ids': [(6, 0,
+                                   groups.get('groups_id',
+                                              []))]})
 
         return super(ResUsers, self).write(vals)
 
     @api.multi
     def search_users_for_merge(self):
-        '''
-        Return a view with do the merge request
-        '''
-        model, action_id = self.env['ir.model.data'].\
+        """ Return a view with do the merge request
+        """
+        action_id = self.env['ir.model.data'].\
             get_object_reference('auth_multi',
                                  'search_user_merge_action')
         action = self.env['ir.actions.act_window'].\
             with_context({'default_user_id': self._uid}).\
-            browse(action_id).\
+            browse(action_id[1]).\
             read([])
         copy_dict = dict(self._context).update({'default_user_id': self._uid})
         action = action[0]
