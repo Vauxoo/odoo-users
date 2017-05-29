@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+    <record model="ir.ui.view" id="view_partner_form">
+      <field name="name">Partner.Uber.View</field>
+      <field name="model">res.partner</field>
+      <field name="inherit_id" ref="base.view_partner_form"/>
+      <field name="groups_id" eval="[(4, ref('uber_oauth.group_uber_menu'))]"/>
+      <field name="arch" type="xml">
+        <xpath expr="//div[@class='oe_button_box']/button[@name='toggle_active']" position="before">
+            <button
+                name="go_trips_view"
+                type="object"
+                string="Go to Trips View"
+                attrs="{'invisible':[('uber_driver','=',False)]}"
+                class="oe_stat_button"
+                icon="fa-car"/>
+        </xpath>
+        <xpath expr="//page[last()]" position="after">
+            <page name='uber_info' string='Uber Info' attrs="{'invisible':[('uber_driver','=',False)]}">
+                <group col="2" colspan="2">
+                    <button
+                        name="get_trip_information"
+                        string="Load Driver's Trips History From Uber"
+                        type="object"
+                        attrs="{'invisible':[('uber_driver','=',False)]}"
+                        class="oe_link"
+                        icon="fa-history"/>
+                </group>
+                <field name="uber_driver" invisible="1"/>
+                <separator/>
+                <label for="rating"/>
+                <field name="rating"/>
+                <!-- <field name="trip_ids" > -->
+                <!--     <tree> -->
+                <!--         <field name="start_city" /> -->
+                <!--         <field name="pickup_date" /> -->
+                <!--         <field name="drop_off_date" /> -->
+                <!--         <field name="duration" /> -->
+                <!--         <field name="distance" /> -->
+                <!--         <field name="fare" /> -->
+                <!--         <field name="status" /> -->
+                <!--     </tree> -->
+                <!-- </field> -->
+            </page>
+        </xpath>
+      </field>
+    </record>
+</odoo>

@@ -1,0 +1,3 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+access_uber_trips_status,access_uber_trips_status,model_uber_trips_status,,1,0,0,0
+access_uber_trips,access_uber_trips,model_uber_trips,,1,0,0,0

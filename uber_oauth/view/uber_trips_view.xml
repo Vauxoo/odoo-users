@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="view_uber_trips_pivot">
+        <field name="name">uber.trips.pivot</field>
+        <field name="model">uber.trips</field>
+        <field name="arch" type="xml">
+            <pivot string="Uber Tripss" display_quantity="true">
+                <field name="driver_id"/>
+                <field name="fare" type="measure"/>
+                <field name="duration" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_trips_graph">
+        <field name="name">uber.trips.graph</field>
+        <field name="model">uber.trips</field>
+        <field name="arch" type="xml">
+            <graph string="Uber Trips">
+                <field name="driver_id"/>
+                <field name="fare" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_uber_trips_status_tree" model="ir.ui.view">
+        <field name="name">uber.trips.status.tree</field>
+        <field name="model">uber.trips.status</field>
+        <field name="arch" type="xml">
+            <tree string="Uber Trips Status">
+                <field name="date"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_uber_trips_status_form" model="ir.ui.view">
+        <field name="name">uber.trips.status.form</field>
+        <field name="model">uber.trips.status</field>
+        <field name="arch" type="xml">
+            <form string="Uber Trips Status">
+                <group>
+                    <field name="date"/>
+                    <field name="status"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="uber_trips_tree" model="ir.ui.view">
+        <field name="name">uber.trips.tree</field>
+        <field name="model">uber.trips</field>
+        <field name="arch" type="xml">
+            <tree string="Uber Trips">
+                <field name="driver_id"/>
+                <field name="trip" invisible="1"/>
+                <field name="vehicle" invisible="1"/>
+                <field name="pickup" invisible="1"/>
+                <field name="pickup_date"/>
+                <field name="drop_off" invisible="1"/>
+                <field name="drop_off_date"/>
+                <field name="duration"/>
+                <field name="start_city"/>
+                <field name="start_latitude"/>
+                <field name="start_longitude"/>
+                <field name="distance"/>
+                <field name="fare"/>
+                <field name="status"/>
+                <field name="trip_status_ids"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="uber_trips_form" model="ir.ui.view">
+        <field name="name">uber.trips.form</field>
+        <field name="model">uber.trips</field>
+        <field name="arch" type="xml">
+            <form string="Uber Trips">
+                <header>
+                </header>
+                <div class="alert alert-info" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('status','=','completed')]}">
+                    This Trip was not completed
+                </div>
+                <group col="1">
+                    <field name="driver_id"/>
+                </group>
+                <group col="2" colspan="6">
+                    <field name="trip"/>
+                    <field name="vehicle"/>
+                </group>
+                <separator string="Trip Info"/>
+                <group>
+                    <field name="pickup" invisible="1"/>
+                    <field name="pickup_date"/>
+                    <field name="drop_off" invisible="1"/>
+                    <field name="drop_off_date"/>
+                    <field name="duration"/>
+                    <field name="start_city"/>
+                    <field name="start_latitude"/>
+                    <field name="start_longitude"/>
+                    <field name="distance"/>
+                    <field name="fare"/>
+                    <field name="status"/>
+                </group>
+                <group>
+                    <field name="trip_status_ids" nolabel="1"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_uber_trips_filter" model="ir.ui.view">
+        <field name="name">uber.trips.select</field>
+        <field name="model">uber.trips</field>
+        <field name="arch" type="xml">
+            <search string="Search Uber Trips">
+                <field name="start_city" string="City"/>
+                <field name="fare" />
+                <filter name="completed" string="Completed" domain="[('status','=','completed')]"/>
+                <filter name="driver_canceled" string="Driver Canceled" domain="[('status','=','driver_canceled')]"/>
+                <filter name="rider_canceled" string="Rider Canceled" domain="[('status','=','rider_canceled')]"/>
+                <separator/>
+                <field name="driver_id" string="Driver"/>
+                <field name="pickup_date" string="Pick Up Date"/>
+                <separator/>
+                <filter domain="[('driver_id','=',uid)]" help="My Uber Trips"/>
+                <group expand="0" string="Group By">
+                    <filter string="Date" context="{'group_by':'pickup_date'}"/>
+                    <filter string="Month" name='monthgroup' context="{'group_by':'pickup_date:month'}"/>
+                    <filter string="Day" name='daygroup' context="{'group_by':'pickup_date:day'}"/>
+                    <filter string="Year" name='yeargroup' context="{'group_by':'pickup_date:year'}"/>
+                    <separator/>
+                    <filter string="Driver" name='drivergroup' context="{'group_by':'driver_id'}"/>
+                    <filter name="status" string="Status" context="{'group_by':'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_uber_trips_tree" model="ir.actions.act_window">
+        <field name="name">Uber Trips</field>
+        <field name="res_model">uber.trips</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="view_id" ref="uber_trips_tree"/>
+        <field name="search_view_id" ref="view_uber_trips_filter"/>
+    </record>
+
+    <record id="action_uber_drivers" model="ir.actions.act_window">
+        <field name="name">Uber Drivers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('uber_driver','=',True)]</field>
+        <field name="context">{'default_uber_driver': True}</field>
+    </record>
+
+    <record id="action_uber_trips_dashboard" model="ir.actions.act_window">
+        <field name="name">Uber Dashboard</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="domain">[('uber_driver','=',True)]</field>
+        <field name="context">{'default_uber_driver': True}</field>
+    </record>
+
+    <menuitem name="Uber"
+        id="menu_uber"
+        groups='group_uber_menu'
+        web_icon="uber_oauth,static/description/icon.png"
+        sequence="40"/>
+
+    <menuitem name="Dashboard"
+        id="dashboard_menu_uber"
+        parent="menu_uber"
+        action="action_uber_trips_dashboard"
+        sequence="3"/>
+
+    <menuitem name="Uber"
+        id="sub_menu_uber"
+        parent="menu_uber"
+        sequence="2"/>
+
+    <menuitem name="Drivers"
+        id="drivers_menu_uber"
+        parent="sub_menu_uber"
+        action="action_uber_drivers"
+        sequence="1"/>
+
+    <menuitem name="Trips"
+        id="trips_menu_uber"
+        parent="sub_menu_uber"
+        action="action_uber_trips_tree"
+        sequence="2"/>
+
+</odoo>

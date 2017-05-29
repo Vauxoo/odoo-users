@@ -8,3 +8,7 @@ class AuthOauthProvider(models.Model):
 
     client_secret = fields.Char('Client Secret',
                                 help='The client secret you received')
+
+    url_get_token = fields.Char('URL to get Token',
+                                help='URL used to get the user'
+                                ' token')

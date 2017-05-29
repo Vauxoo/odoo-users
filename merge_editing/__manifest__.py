@@ -20,7 +20,7 @@
 ##############################################################################
 {
     "name": "Merge Records",
-    "version": "8.0.0.1.0",
+    "version": "10.0.0.1.0",
     "author": "Vauxoo",
     "category": "Tools",
     "website": "http://www.vauxoo.com",
@@ -31,7 +31,7 @@
         'security/ir.model.access.csv',
         'merge_editing_view.xml',
     ],
-    'installable': True,
+    'installable': False,
     'application': True,
     'auto_install': False,
 }

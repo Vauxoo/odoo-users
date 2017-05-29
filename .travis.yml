@@ -19,14 +19,13 @@ addons:
       - poppler-utils
       - antiword
       - python-xlrd
-      - python-beautifulsoup4
 
 python:
   - "2.7"
 
 env:
   global:
-  - LINT_CHECK=0 TESTS="0" VERSION="9.0" ODOO_REPO="vauxoo/odoo"
+  - LINT_CHECK=0 TESTS="0" VERSION="10.0" ODOO_REPO="vauxoo/odoo"
   matrix:
   - LINT_CHECK=1
   - TESTS="1"

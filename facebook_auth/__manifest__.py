@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Facebook Auth',
-    'version': '0.1',
+    "version": "10.0.0.1.0",
     'author': 'Vauxoo',
     'category': 'Hidden',
     'description': """
@@ -51,7 +51,7 @@ Update the main data provider with the correct url to do login with Facebook
     ],
     'test': [
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     'web_preload': False,
 }
