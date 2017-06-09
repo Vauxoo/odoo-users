@@ -1,116 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
-    <data noupdate="1">
+<odoo noupdate="1">
 
-        <record id="merge_proposal_template" model="mail.template">
-            <field name="name">Merge Proposal</field>
-            <field name="email_from">info@vauxoo.com</field>
-            <field name="subject">Merge Proposal</field>
-            <field name="model_id" ref="auth_multi.model_merge_user_for_login"/>
-            <field name="email_to" ></field>
-            <field name="partner_to"></field>
-            <field name="auto_delete" eval="True"/>
-            <field name="body_html"><![CDATA[
-                <html>
-                    <head>
-                        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-                        <title>Registro CFDI</title>
-                    </head>
-                    <body>
-
+    <record id="merge_proposal_template" model="mail.template">
+        <field name="name">Merge Proposal</field>
+        <field name="email_from">info@vauxoo.com</field>
+        <field name="subject">Merge Proposal</field>
+        <field name="model_id" ref="auth_multi.model_merge_user_for_login"/>
+        <field name="email_to" ></field>
+        <field name="partner_to"></field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html"><![CDATA[
+            <html>
+                <head>
+                    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+                    <title>Registro CFDI</title>
+                </head>
+                <body>
 
 
 
 
-                    <center>
-                        <table id="backgroundTable" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
-                            <tbody><tr>
-                                <td align="center" valign="top">
-                                    <table id="templateContainer" border="0" cellpadding="0" cellspacing="0" width="600">
-                                        <tbody><tr style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(247, 247, 247);">
-                                            <td align="center" valign="top">
-                                                <!-- // Begin Template Header \\ -->
-                                                <table style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(253, 253, 253);" border="0" cellpadding="0" cellspacing="0" width="600">
-                                                    <tbody><tr>
-                                                        <td class="headerContent" style="padding-left:10px; padding-right:20px;" width="100%">
-                                                            <div mc:edit="Header_content">
-                                                                <h2 style="color:red;">${r.get('tittle')}</h2>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                </tbody></table>
-                                                <!-- // End Template Header \\ -->
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td align="center" valign="top">
-                                                <!-- // Begin Template Body \\ -->
-                                                <table style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(247, 247, 247);" border="0" cellpadding="10" cellspacing="0" width="600">
-                                                    <tbody><tr>
-                                                        <!-- // Begin Sidebar \\  -->
-                                                        <td id="templateSidebar" valign="top" width="180">
-                                                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                                <tbody><tr>
-                                                                    <td valign="top">
 
-                                                                        <!-- // Begin Module: Standard Content \\ -->
-                                                                        <table style="margin: 0px; padding: 0px; width: 100%; background-color: rgb(249, 252, 255);" border="0" cellpadding="20" cellspacing="0" width="100%">
-                                                                            <tbody><tr>
-                                                                                <td style="padding-left:10px;" valign="top">
-                                                                                    <div mc:edit="std_content01">
-                                                                                        <strong>${r.get('access')}</strong>
-                                                                                        <br>
-                                                                                        <a href="${r.get('url')}">${r.get('base_url')}</a>
-                                                                                        <br>
-                                                                                        <br>
-                                                                                        <strong>${r.get('genereted')}</strong>
-                                                                                        <br>
-                                                                                        ${r.get('name')}
-                                                                                        <br>
-                                                                                        <br>
-                                                                                        ${r.get('message')}
-                                                                                    </div>
-                                                                                </td>
-                                                                            </tr>
-                                                                        </tbody></table>
-                                                                        <!-- // End Module: Standard Content \\ -->
+                <center>
+                    <table id="backgroundTable" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
+                        <tbody><tr>
+                            <td align="center" valign="top">
+                                <table id="templateContainer" border="0" cellpadding="0" cellspacing="0" width="600">
+                                    <tbody><tr style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(247, 247, 247);">
+                                        <td align="center" valign="top">
+                                            <!-- // Begin Template Header \\ -->
+                                            <table style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(253, 253, 253);" border="0" cellpadding="0" cellspacing="0" width="600">
+                                                <tbody><tr>
+                                                    <td class="headerContent" style="padding-left:10px; padding-right:20px;" width="100%">
+                                                        <div mc:edit="Header_content">
+                                                            <h2 style="color:red;">${r.get('tittle')}</h2>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody></table>
+                                            <!-- // End Template Header \\ -->
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center" valign="top">
+                                            <!-- // Begin Template Body \\ -->
+                                            <table style="margin: 0px; padding: 0px; width: 600px; background-color: rgb(247, 247, 247);" border="0" cellpadding="10" cellspacing="0" width="600">
+                                                <tbody><tr>
+                                                    <!-- // Begin Sidebar \\  -->
+                                                    <td id="templateSidebar" valign="top" width="180">
+                                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                            <tbody><tr>
+                                                                <td valign="top">
 
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody></table>
-                                                        </td>
-                                                        <!-- // End Sidebar \\ -->
-                                                        <td class="bodyContent" valign="top">
+                                                                    <!-- // Begin Module: Standard Content \\ -->
+                                                                    <table style="margin: 0px; padding: 0px; width: 100%; background-color: rgb(249, 252, 255);" border="0" cellpadding="20" cellspacing="0" width="100%">
+                                                                        <tbody><tr>
+                                                                            <td style="padding-left:10px;" valign="top">
+                                                                                <div mc:edit="std_content01">
+                                                                                    <strong>${r.get('access')}</strong>
+                                                                                    <br>
+                                                                                    <a href="${r.get('url')}">${r.get('base_url')}</a>
+                                                                                    <br>
+                                                                                    <br>
+                                                                                    <strong>${r.get('genereted')}</strong>
+                                                                                    <br>
+                                                                                    ${r.get('name')}
+                                                                                    <br>
+                                                                                    <br>
+                                                                                    ${r.get('message')}
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody></table>
+                                                                    <!-- // End Module: Standard Content \\ -->
 
-                                                            <!-- // Begin Module: Standard Content \\ -->
-                                                            <table border="0" cellpadding="10" cellspacing="0" width="100%">
-                                                                <tbody><tr>
-                                                                    <td style="padding-left:0;" valign="top">
-                                                                        <div mc:edit="std_content00">
-                                                                            <h2 class="h2">${r.get('user')}</h2>
-                                                                            <pre style="font-size:1.1em;
-                                                                            font-family:Arial">${r.get('message2')}</pre>
-                                                                            <br>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody></table>
-                                                            <!-- // End Module: Standard Content \\ -->
-                                                        </td>
-                                                    </tr>
-                                                </tbody></table>
-                                                <!-- // End Template Body \\ -->
-                                            </td>
-                                    </tr></tbody></table>
-                                    <br>
-                                </td>
-                            </tr>
-                        </tbody></table>
-                    </center>
-                    </body>
-                </html>
-                ]]>
-                </field>
-        </record>
-    </data>
-</openerp>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody></table>
+                                                    </td>
+                                                    <!-- // End Sidebar \\ -->
+                                                    <td class="bodyContent" valign="top">
+
+                                                        <!-- // Begin Module: Standard Content \\ -->
+                                                        <table border="0" cellpadding="10" cellspacing="0" width="100%">
+                                                            <tbody><tr>
+                                                                <td style="padding-left:0;" valign="top">
+                                                                    <div mc:edit="std_content00">
+                                                                        <h2 class="h2">${r.get('user')}</h2>
+                                                                        <pre style="font-size:1.1em;
+                                                                        font-family:Arial">${r.get('message2')}</pre>
+                                                                        <br>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody></table>
+                                                        <!-- // End Module: Standard Content \\ -->
+                                                    </td>
+                                                </tr>
+                                            </tbody></table>
+                                            <!-- // End Template Body \\ -->
+                                        </td>
+                                </tr></tbody></table>
+                                <br>
+                            </td>
+                        </tr>
+                    </tbody></table>
+                </center>
+                </body>
+            </html>
+            ]]>
+            </field>
+    </record>
+</odoo>

@@ -1,89 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
-    <data>
-        <template id="auth_multi_token_used" name="Error">
-            <t t-call="web.login_layout">
-                <div class="panel panel-default">
-                  <!-- Default panel contents -->
-                  <div t-att-class="'alert-danger' if process == 'error' else 'alert-warning'"><span t-esc="message"/></div>
-                  <div class="panel-body">
-                      <t t-if='process == "error"'>
-                      <p>There was an error and we can't complete the process.</p>
-                      <p>Your request could be validated previously you must wait that others users approve the requests or your user is not involved in the process</p>
-                      </t>
-                      <t t-if='process == "used"'>
-                      <p>This token was used and confirmed please check the url and try again</p>
-                      </t>
-                      <t t-if='process == "notfound"'>
-                      <p>This token does not exist</p>
-                      </t>
-                  </div>
-                </div>
+<odoo>
+    <template id="auth_multi_token_used" name="Error">
+        <t t-call="web.login_layout">
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+              <div t-att-class="'alert-danger' if process == 'error' else 'alert-warning'"><span t-esc="message"/></div>
+              <div class="panel-body">
+                  <t t-if='process == "error"'>
+                  <p>There was an error and we can't complete the process.</p>
+                  <p>Your request could be validated previously you must wait that others users approve the requests or your user is not involved in the process</p>
+                  </t>
+                  <t t-if='process == "used"'>
+                  <p>This token was used and confirmed please check the url and try again</p>
+                  </t>
+                  <t t-if='process == "notfound"'>
+                  <p>This token does not exist</p>
+                  </t>
+              </div>
+            </div>
 
-            </t>
-        </template>
-        <template id="auth_multi_proccess_completed" name="Message">
-            <t t-call="web.login_layout">
-                <div class="panel panel-default">
-                  <!-- Default panel contents -->
-                  <div class="panel-heading alert-success">Proccess Completed</div>
-                  <div class="panel-body">
-                      <t t-if='auth == True'>
-                      <p>Now you can login with <span t-esc="main_name"/> user with these different gmail acounts:</p>
-                      </t>
-                      <t t-if='auth == False'>
-                      <p>Authorization accepted. Only you need the authorization of the others users involved in the merge process</p>
-                      </t>
-                  </div>
-                  <!-- Table -->
-                  <form method="post" t-attf-action="/web/login?">
-                  <table class="table">
-                        <tr>
-                            <td><span>Login</span></td>
-                        </tr>
-                          <footer>
-                         <button aling='center' class="btn btn-success btn-xs img-rounded">Login</button>
-                          </footer>
-                  </table>
-               </form>
-                </div>
+        </t>
+    </template>
+    <template id="auth_multi_proccess_completed" name="Message">
+        <t t-call="web.login_layout">
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+              <div class="panel-heading alert-success">Proccess Completed</div>
+              <div class="panel-body">
+                  <t t-if='auth == True'>
+                  <p>Now you can login with <span t-esc="main_name"/> user with these different gmail acounts:</p>
+                  </t>
+                  <t t-if='auth == False'>
+                  <p>Authorization accepted. Only you need the authorization of the others users involved in the merge process</p>
+                  </t>
+              </div>
+              <!-- Table -->
+              <form method="post" t-attf-action="/web/login?">
+              <table class="table">
+                    <tr>
+                        <td><span>Login</span></td>
+                    </tr>
+                      <footer>
+                     <button aling='center' class="btn btn-success btn-xs img-rounded">Login</button>
+                      </footer>
+              </table>
+           </form>
+            </div>
 
-            </t>
-        </template>
-        <template id="auth_multi_login" name="Login">
-            <t t-call="web.login_layout">
-                <div class="panel panel-default">
-                  <!-- Default panel contents -->
-                  <div class="panel-heading alert-info">Merge Users</div>
-                  <div class="panel-body">
-                      <t t-if='same_user == False'>
-                      <p>Your user will be merged with the <span t-esc="main_name"/> user and then you can login with both gmail account to this user
-                      </p>
+        </t>
+    </template>
+    <template id="auth_multi_login" name="Login">
+        <t t-call="web.login_layout">
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+              <div class="panel-heading alert-info">Merge Users</div>
+              <div class="panel-body">
+                  <t t-if='same_user == False'>
+                  <p>Your user will be merged with the <span t-esc="main_name"/> user and then you can login with both gmail account to this user
+                  </p>
+                  </t>
+                  <t t-if='same_user == True'>
+                  <p>We need your authorization for we can merge these users with your user</p>
+                  </t>
+              </div>
+              <!-- Table -->
+              <form method="post" t-attf-action="/do_merge/apply_merge/?token=#{token}">
+              <table class="table">
+                    <tr>
+                        <td><span>User</span></td>
+                        <td><span>Authorized</span></td>
+                    </tr>
+                      <t t-foreach="users" t-as="user">
+                            <tr>
+                              <td><span readonly="1" t-esc="user[0]"/></td>
+                              <td><input readonly="1" type='checkbox' t-att-checked="user[1]"/></td>
+                            </tr>
                       </t>
-                      <t t-if='same_user == True'>
-                      <p>We need your authorization for we can merge these users with your user</p>
-                      </t>
-                  </div>
-                  <!-- Table -->
-                  <form method="post" t-attf-action="/do_merge/apply_merge/?token=#{token}">
-                  <table class="table">
-                        <tr>
-                            <td><span>User</span></td>
-                            <td><span>Authorized</span></td>
-                        </tr>
-                          <t t-foreach="users" t-as="user">
-                                <tr>
-                                  <td><span readonly="1" t-esc="user[0]"/></td>
-                                  <td><input readonly="1" type='checkbox' t-att-checked="user[1]"/></td>
-                                </tr>
-                          </t>
-                  </table>
-                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                         Click here to apply  <button aling='center' class="btn btn-success btn-xs img-rounded">Apply</button>
-               </form>
-                </div>
+              </table>
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                     Click here to apply  <button aling='center' class="btn btn-success btn-xs img-rounded">Apply</button>
+           </form>
+            </div>
 
-            </t>
-        </template>
-    </data>
-</openerp>
+        </t>
+    </template>
+</odoo>

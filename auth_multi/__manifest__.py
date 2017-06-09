@@ -40,7 +40,7 @@
         'view/auth_view.xml',
         'wizard/merge_user_view.xml',
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': False,
     'web_preload': False,
 }

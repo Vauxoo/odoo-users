@@ -19,11 +19,12 @@
 #
 ##############################################################################
 
-import random
-from openerp import SUPERUSER_ID, tools, models, api, _, fields
-from openerp.exceptions import Warning as UserError
-from openerp.addons.mail.models.mail_template import mako_template_env
-from openerp.tools.safe_eval import safe_eval
+import os
+import binascii
+from odoo import tools, models, api, _, fields
+from odoo.exceptions import UserError
+from odoo.addons.mail.models.mail_template import mako_template_env
+from odoo.tools.safe_eval import safe_eval
 import re
 
 
@@ -73,13 +74,10 @@ class MergeUserForLogin(models.Model):
         return the strgin with record ID
         """
         # the token has an entropy of about 120 bits (6 bits/char * 20 chars)
-        chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZab'\
-            'cdefghijklmnopqrstuvwxyz0123456789'
-        token = ''.join(random.choice(chars) for i in xrange(20))
+        token = binascii.hexlify(os.urandom(20))
         if self.search([('access_token', '=', token)]):
             return self.random_token()
-        else:
-            return token
+        return token
 
     @api.multi
     def change_gmail_fields(self):
@@ -91,17 +89,16 @@ class MergeUserForLogin(models.Model):
         to do login with
         multiple gmail accounts
         """
-        tokens_obj = self.env['gmail.tokens']
+        tokens_obj = self.env['oauth.tokens']
         user_obj = self.env['res.users']
-        user_ids = user_obj.search([])
+        user_ids = user_obj.search([('oauth_provider_id', '!=', False)])
         for user_brw in user_ids:
             if not tokens_obj.search([('oauth_provider_id', '=',
-                                       user_brw.oauth_provider_id and
                                        user_brw.oauth_provider_id.id),
                                       ('oauth_uid', '=', user_brw.oauth_uid),
                                       ('user_id', '=', user_brw.id)]):
                 user_brw.write({
-                    'gmail_tokens':
+                    'oauth_tokens':
                     [(0, 0,
                       {'name': user_brw.login,
                        'oauth_provider_id': (user_brw.oauth_provider_id and
@@ -130,7 +127,7 @@ class MergeUserForLogin(models.Model):
                                        res_id=res_id,
                                        model='merge.user.for.login',).\
             get(user.partner_id.id)
-        base_url = self.env['ir.config_parameter'].\
+        base_url = self.env['ir.config_parameter'].sudo().\
             get_param('web.base.url', default='')
         url = '%s/do_merge/execute_merge?token=%s' % (base_url, action)
         if not user.login:
@@ -199,9 +196,9 @@ class MergeUserForLogin(models.Model):
         email of user to merge
         is the same of the main user
         """
-        user_obj = self.env['res.users']
+        self.ensure_one()
         wzr_brw = self.sudo()
-        parent_brw = user_obj.sudo(SUPERUSER_ID).browse(wzr_brw.user_id.id)
+        parent_brw = wzr_brw.user_id
         body = '''
   <div cellspacing="10" style="font-family:verdana;background-color:#C6DEFF;">
       <div>Result:</div>
@@ -357,7 +354,5 @@ class MergeUserForLogin(models.Model):
                     'executed': True
                 })
                 return True
-            else:
-                return False
 
         return False

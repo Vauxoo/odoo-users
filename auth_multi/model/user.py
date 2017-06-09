@@ -28,19 +28,18 @@ import time
 
 import simplejson
 
-import openerp
-from openerp import api, models, fields
-from openerp import SUPERUSER_ID
+from odoo import api, models, fields
+from odoo.exceptions import AccessDenied
 
 _logger = logging.getLogger(__name__)
 
 
-class GmailTokens(models.Model):
+class OauthTokens(models.Model):
 
-    _name = 'gmail.tokens'
+    _name = 'oauth.tokens'
 
     name = fields.Char('Login',
-                       help='User login for your gmail account')
+                       help='User login for your account')
     oauth_provider_id = fields.Many2one('auth.oauth.provider',
                                         'OAuth Provider')
     oauth_uid = fields.Char('OAuth User ID',
@@ -67,10 +66,10 @@ class ResUsers(models.Model):
                 search([('parent_id', '=', partner_id)])
             user_brw.my_contacts = partner_ids.ids
 
-    gmail_tokens = fields.One2many('gmail.tokens', 'user_id',
-                                   'Gmail Access',
+    oauth_tokens = fields.One2many('oauth.tokens', 'user_id',
+                                   'oauth Access',
                                    help='Tokens that allow '
-                                   'do login with many google accounts')
+                                   'do login with many Oauth APIs')
     my_contacts = fields.One2many('res.partner',
                                   compute='_search_my_contacs',
                                   string='My Contacts',
@@ -85,9 +84,9 @@ class ResUsers(models.Model):
         system
         return True if the token sent in values exist else return False
         """
-        gmail_tokens_obj = self.env['gmail.tokens']
+        oauth_tokens_obj = self.env['oauth.tokens']
         for user in self:
-            tokens_ids = gmail_tokens_obj.\
+            tokens_ids = oauth_tokens_obj.\
                 search([('oauth_provider_id', '=',
                          values.get('oauth_provider_id')),
                         ('oauth_uid', '=', values.get('oauth_uid')),
@@ -101,12 +100,12 @@ class ResUsers(models.Model):
         """ Verifies that token is allowed by the user that tries do login
         @param password: String with the token sent
         """
-        token_obj = self.env['gmail.tokens']
+        token_obj = self.env['oauth.tokens']
 
         try:
             return super(ResUsers, self).check_credentials(password)
-        except openerp.exceptions.AccessDenied:
-            res = token_obj.sudo(SUPERUSER_ID).\
+        except AccessDenied:
+            res = token_obj.sudo().\
                 search([('user_id', '=', self._uid),
                         ('oauth_access_token', '=', password)])
             if not res:
@@ -132,7 +131,7 @@ class ResUsers(models.Model):
 
             if not result:
                 values.update({
-                    'gmail_tokens': [(0, 0, {
+                    'oauth_tokens': [(0, 0, {
                         'name': values.get('login', False),
                         'oauth_provider_id': values.pop('oauth_provider_id',
                                                         False),
@@ -145,12 +144,11 @@ class ResUsers(models.Model):
                 user_brw.write(values)
                 return user_ids.ids[0]
 
-            else:
+            return user_ids.ids[0]
 
-                return user_ids.ids[0]
         else:
             values.update({
-                'gmail_tokens': [(0, 0, {
+                'oauth_tokens': [(0, 0, {
                     'name': values.get('login', False),
                     'oauth_provider_id': values.pop('oauth_provider_id',
                                                     False),
@@ -176,7 +174,7 @@ class ResUsers(models.Model):
         """
 
         oauth_uid = validation['user_id']
-        token_obj = self.env['gmail.tokens']
+        token_obj = self.env['oauth.tokens']
         token_ids = token_obj.\
             search([("oauth_uid", "=", oauth_uid),
                     ('oauth_provider_id', '=', provider)])
@@ -203,7 +201,7 @@ class ResUsers(models.Model):
 
             try:
                 _, login, _ = self.signup(values, token)
-            except openerp.exceptions.AccessDenied, access_denied_exception:
+            except AccessDenied, access_denied_exception:
                 raise access_denied_exception
 
         else:

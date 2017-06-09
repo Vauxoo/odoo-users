@@ -20,7 +20,7 @@
 #
 ##############################################################################
 
-from openerp import api, models, tools
+from odoo import api, models, tools
 from lxml import etree
 import re
 
@@ -28,19 +28,17 @@ import re
 class MergeFuseWizard(models.TransientModel):
     _name = 'merge.fuse.wizard'
 
-    def fields_view_get(self, cr, uid, view_id=None, view_type='form',
-                        context=None, toolbar=False, submenu=False):
-        result = super(MergeFuseWizard, self).fields_view_get(cr, uid,
-                                                              view_id,
+    @api.model
+    def fields_view_get(self, view_id=None, view_type='form',
+                        toolbar=False, submenu=False):
+        result = super(MergeFuseWizard, self).fields_view_get(view_id,
                                                               view_type,
-                                                              context,
                                                               toolbar,
                                                               submenu)
-        if context.get('merge_fuse_object'):
-            merge_object = self.pool.get('merge.object')
-            fuse_data = merge_object.browse(cr, uid,
-                                            context.get('merge_fuse_object'),
-                                            context)
+        if self._context.get('merge_fuse_object'):
+            merge_object = self.env['merge.object']
+            fuse_data = merge_object.browse(
+                self._context.get('merge_fuse_object'))
             all_fields = {}
             xml_form = etree.Element('form',
                                      {'string':
@@ -165,19 +163,18 @@ RETURNS float AS $$
 class MergeEditingWizard(models.TransientModel):
     _name = 'merge.editing.wizard'
 
-    def fields_view_get(self, cr, uid, view_id=None, view_type='form',
+    @api.model
+    def fields_view_get(self, view_id=None, view_type='form',
                         context=None, toolbar=False, submenu=False):
-        result = super(MergeEditingWizard, self).fields_view_get(cr, uid,
-                                                                 view_id,
+        result = super(MergeEditingWizard, self).fields_view_get(view_id,
                                                                  view_type,
                                                                  context,
                                                                  toolbar,
                                                                  submenu)
-        if context.get('merge_editing_object'):
-            merge_object = self.pool.get('merge.object')
-            editing_data = merge_object.\
-                browse(cr, uid,
-                       context.get('merge_editing_object'), context)
+        if self._context.get('merge_editing_object'):
+            merge_object = self.env['merge.object']
+            editing_data = merge_object.browse(
+                self._context.get('merge_editing_object'))
             all_fields = {}
             xml_form = etree.Element('form', {'string':
                                               tools.ustr(editing_data.name)})
@@ -194,18 +191,18 @@ class MergeEditingWizard(models.TransientModel):
             all_fields['serpent_image'] = {'type': 'binary',
                                            'string': ''}
             xml_group = etree.SubElement(xml_form, 'group', {'colspan': '4'})
-            model_obj = self.pool.get(context.get('active_model'))
+            model_obj = self.env[context.get('active_model')]
             for field in editing_data.field_ids:
                 if field.ttype == "many2many":
-                    field_info = model_obj.fields_get(cr, uid, [field.name],
+                    field_info = model_obj.fields_get([field.name],
                                                       context)
                     all_fields[field.name] = field_info[field.name]
-                    all_fields["selection_" + field.name] = \
-                        {'type': 'selection',
-                         'string': field_info[field.name]['string'],
-                         'selection': [('set', 'Set'),
-                                       ('remove_m2m', 'Remove'),
-                                       ('add', 'Add')]}
+                    all_fields["selection_" + field.name] = {
+                        'type': 'selection',
+                        'string': field_info[field.name]['string'],
+                        'selection': [('set', 'Set'),
+                                      ('remove_m2m', 'Remove'),
+                                      ('add', 'Add')]}
                     xml_group = etree.SubElement(xml_group, 'group',
                                                  {'colspan': '4'})
                     etree.\
@@ -226,8 +223,7 @@ class MergeEditingWizard(models.TransientModel):
                                       'attrs': "{'invisible':[('selection_" +
                                       field.name + "','=','remove_m2m')]}"})
                 elif field.ttype == "many2one":
-                    field_info = model_obj.fields_get(cr, uid, [field.name],
-                                                      context)
+                    field_info = model_obj.fields_get([field.name])
                     if field_info:
                         all_fields[
                             "selection_" +
@@ -259,8 +255,7 @@ class MergeEditingWizard(models.TransientModel):
                                 'attrs': "{'invisible':[('selection_" +
                                 field.name + "','=','remove')]}"})
                 elif field.ttype == "char":
-                    field_info = model_obj.fields_get(cr, uid, [field.name],
-                                                      context)
+                    field_info = model_obj.fields_get([field.name])
                     all_fields[
                         "selection_" +
                         field.name] = {
@@ -293,8 +288,7 @@ class MergeEditingWizard(models.TransientModel):
                             'colspan': '2'})
                 elif field.ttype == 'selection':
                     field_info = model_obj.fields_get(
-                        cr, uid, [
-                            field.name], context)
+                        [field.name])
                     all_fields[
                         "selection_" +
                         field.name] = {
@@ -307,8 +301,7 @@ class MergeEditingWizard(models.TransientModel):
                             ('remove',
                              'Remove')]}
                     field_info = model_obj.fields_get(
-                        cr, uid, [
-                            field.name], context)
+                        [field.name])
                     etree.SubElement(
                         xml_group, 'field', {
                             'name': "selection_" + field.name, 'colspan': '2'})
@@ -329,8 +322,7 @@ class MergeEditingWizard(models.TransientModel):
                             field.name]['selection']}
                 else:
                     field_info = model_obj.fields_get(
-                        cr, uid, [
-                            field.name], context)
+                        [field.name])
                     all_fields[
                         field.name] = {
                         'type': field.ttype,
@@ -419,9 +411,11 @@ class MergeEditingWizard(models.TransientModel):
             result['fields'] = all_fields
         return result
 
-    def create(self, cr, uid, vals, context=None):
-        if context.get('active_model') and context.get('active_ids'):
-            model_obj = self.pool.get(context.get('active_model'))
+    @api.model
+    def create(self, vals):
+        if (self._context.get('active_model') and
+                self._context.get('active_ids')):
+            model_obj = self.env[self._context.get('active_model')]
             dict_cr = {}
             for key, val in vals.items():
                 if key.startswith('selection_'):
@@ -438,13 +432,9 @@ class MergeEditingWizard(models.TransientModel):
                             m2m_list.append((4, m2m_id))
                         dict_cr.update({split_key: m2m_list})
             if dict_cr:
-                model_obj.write(
-                    cr,
-                    uid,
-                    context.get('active_ids'),
-                    dict_cr,
-                    context)
-        result = super(MergeEditingWizard, self).create(cr, uid, {}, context)
+                model_obj.browse(self._context.get('active_ids')).write(
+                    dict_cr)
+        result = super(MergeEditingWizard, self).create({})
         return result
 
     @api.multi

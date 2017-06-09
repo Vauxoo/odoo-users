@@ -1,256 +1,254 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
-    <data>
-        <!-- wizard view -->
-        <record model="ir.ui.view" id="mail_wizard_invite_view_form">
-            <field name="name">Mail Wizard Invite</field>
-            <field name="model">merge.user.for.login</field>
-            <field name="priority">100</field>
-            <field name="arch" type="xml">
-                <form string="Merge Users" version="7.0">
-                    <group>
-                        <field name="type" />
-                    </group>
-                    <footer>
-                        <button string="Do Pre Merge"
-                            name="do_pre_merge" type="object" class="oe_highlight"  />
-                        or
-                        <button string="Cancel" class="oe_link" special="cancel" />
-                    </footer>
-                </form>
-            </field>
-        </record>
-        <record model="ir.ui.view" id="mail_wizard_change_field_view_form">
-            <field name="name">Mail Wizard Invite</field>
-            <field name="model">merge.user.for.login</field>
-            <field name="priority">200</field>
-            <field name="arch" type="xml">
-                <form string="Merge Users" version="7.0">
-                    <footer>
-                        <button string="Change Gmail Fields"
-                            name="change_gmail_fields" type="object" class="oe_highlight"  />
-                        or
-                        <button string="Cancel" class="oe_link" special="cancel" />
-                    </footer>
-                </form>
-            </field>
-        </record>
-        <record model="ir.ui.view" id="apply_user_merge_view_form">
-            <field name="name">Mail Wizard Invite</field>
-            <field name="model">merge.user.for.login</field>
-            <field name="priority">300</field>
-            <field name="arch" type="xml">
-                <form string="Merge Users" version="7.0">
-                    <footer>
-                        <button string="Execute Merge"
-                            name="execute_merge" type="object" class="oe_highlight"  />
-                        or
-                        <button string="Cancel" class="oe_link" special="cancel" />
-                    </footer>
-                </form>
-            </field>
-        </record>
-        <record model="ir.ui.view" id="search_users_in_view_form">
-            <field name="name">Search Users</field>
-            <field name="model">merge.user.for.login</field>
-            <field name="priority">400</field>
-            <field name="arch" type="xml">
-                <form string="Merge Users" version="7.0">
-                    <group>
-                    <field name="user_id" readonly="1"/>
-                    <field name="type" readonly="1"/>
-                    <field name="search_c"
-                           placeholder="i.e.: user@gmail.com"
-                           />
+<odoo>
+    <!-- wizard view -->
+    <record model="ir.ui.view" id="mail_wizard_invite_view_form">
+        <field name="name">Mail Wizard Invite</field>
+        <field name="model">merge.user.for.login</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <form string="Merge Users" version="7.0">
+                <group>
+                    <field name="type" />
                 </group>
-                    <p invisible="1">
-                    If the names are red is because the email for these users are different to the
-                    parent user in this wizard. Please verify the users in the lines, for our
-                    security </p>
-                    <field name="message" readonly="1"  widget='html'/>
-                    <field name="user_ids"
-                           invisible="1">
-                        <tree string="Users Found" colors="red:same_email==False" >
-                            <field name="user_id"/>
-                            <field name="same_email" invisible="1"/>
-                        </tree>
-                    </field>
-                    <footer>
-                        <button string="Send Mail"
-                            name="do_pre_merge_from_users" type="object" class="oe_highlight"  />
-                        or
-                        <button string="Cancel" class="oe_link" special="cancel" />
-                    </footer>
-                </form>
-            </field>
-        </record>
-        <record model="ir.ui.view" id="admin_search_users_in_view_form">
-            <field name="name">Search Users</field>
-            <field name="model">merge.user.for.login</field>
-            <field name="priority">400</field>
-            <field name="arch" type="xml">
-                <form string="Merge Users" version="7.0">
-                    <group>
-                    <field name="user_id" readonly="1"/>
-                    <field name="type" readonly="1"/>
-                    <field name="search_c"
-                           placeholder="i.e.: user@gmail.com"
-                           />
-                </group>
-                    <p>
-                    If the names are red is because the email for these users are different to the
-                    parent user in this wizard. Please verify the users in the lines, for our
-                    security </p>
+                <footer>
+                    <button string="Do Pre Merge"
+                        name="do_pre_merge" type="object" class="oe_highlight"  />
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="mail_wizard_change_field_view_form">
+        <field name="name">Mail Wizard Invite</field>
+        <field name="model">merge.user.for.login</field>
+        <field name="priority">200</field>
+        <field name="arch" type="xml">
+            <form string="Merge Users" version="7.0">
+                <footer>
+                    <button string="Change Gmail Fields"
+                        name="change_gmail_fields" type="object" class="oe_highlight"  />
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="apply_user_merge_view_form">
+        <field name="name">Mail Wizard Invite</field>
+        <field name="model">merge.user.for.login</field>
+        <field name="priority">300</field>
+        <field name="arch" type="xml">
+            <form string="Merge Users" version="7.0">
+                <footer>
+                    <button string="Execute Merge"
+                        name="execute_merge" type="object" class="oe_highlight"  />
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="search_users_in_view_form">
+        <field name="name">Search Users</field>
+        <field name="model">merge.user.for.login</field>
+        <field name="priority">400</field>
+        <field name="arch" type="xml">
+            <form string="Merge Users" version="7.0">
+                <group>
+                <field name="user_id" readonly="1"/>
+                <field name="type" readonly="1"/>
+                <field name="search_c"
+                       placeholder="i.e.: user@gmail.com"
+                       />
+            </group>
+                <p invisible="1">
+                If the names are red is because the email for these users are different to the
+                parent user in this wizard. Please verify the users in the lines, for our
+                security </p>
+                <field name="message" readonly="1"  widget='html'/>
                 <field name="user_ids"
-                       >
-                        <tree string="Users Found" colors="red:same_email==False" >
-                            <field name="user_id"/>
-                            <field name="same_email" invisible="1"/>
-                        </tree>
-                    </field>
-                    <footer>
-                        <button string="Execute Merge"
-                            name="do_pre_merge_from_users" type="object" class="oe_highlight"  />
-                        or
-                        <button string="Cancel" class="oe_link" special="cancel" />
-                    </footer>
-                </form>
-            </field>
-        </record>
-        <record model="ir.ui.view" id="admin_main_users_in_view_form">
-            <field name="name">Search Users</field>
-            <field name="model">merge.user.for.login</field>
-            <field name="priority">400</field>
-            <field name="arch" type="xml">
-                <form string="Merge Users" version="7.0">
-                    <group>
-                    <field name="user_id" readonly="1"/>
-                    <field name="type" readonly="1"/>
-                    <field name="search_c" readonly="1"/>
+                       invisible="1">
+                    <tree string="Users Found" colors="red:same_email==False" >
+                        <field name="user_id"/>
+                        <field name="same_email" invisible="1"/>
+                    </tree>
+                </field>
+                <footer>
+                    <button string="Send Mail"
+                        name="do_pre_merge_from_users" type="object" class="oe_highlight"  />
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="admin_search_users_in_view_form">
+        <field name="name">Search Users</field>
+        <field name="model">merge.user.for.login</field>
+        <field name="priority">400</field>
+        <field name="arch" type="xml">
+            <form string="Merge Users" version="7.0">
+                <group>
+                <field name="user_id" readonly="1"/>
+                <field name="type" readonly="1"/>
+                <field name="search_c"
+                       placeholder="i.e.: user@gmail.com"
+                       />
+            </group>
+                <p>
+                If the names are red is because the email for these users are different to the
+                parent user in this wizard. Please verify the users in the lines, for our
+                security </p>
+            <field name="user_ids"
+                   >
+                    <tree string="Users Found" colors="red:same_email==False" >
+                        <field name="user_id"/>
+                        <field name="same_email" invisible="1"/>
+                    </tree>
+                </field>
+                <footer>
+                    <button string="Execute Merge"
+                        name="do_pre_merge_from_users" type="object" class="oe_highlight"  />
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="admin_main_users_in_view_form">
+        <field name="name">Search Users</field>
+        <field name="model">merge.user.for.login</field>
+        <field name="priority">400</field>
+        <field name="arch" type="xml">
+            <form string="Merge Users" version="7.0">
+                <group>
+                <field name="user_id" readonly="1"/>
+                <field name="type" readonly="1"/>
+                <field name="search_c" readonly="1"/>
+            </group>
+                <p>
+                If the names are red is because the email for these users are different to the
+                parent user in this wizard. Please verify the users in the lines, for our
+                security </p>
+                <field name="user_ids" readonly="1" >
+                    <tree string="Users Found" colors="blue:authorized==True;red:same_email==False" >
+                        <field name="user_id"/>
+                        <field name="same_email" invisible="1"/>
+                    </tree>
+                </field>
+                <footer>
+                    <button string="Do Merge"
+                            name="execute_merge"
+                            type="object"
+                            class="oe_highlight"  />
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="main_users_in_view_form">
+        <field name="name">Search Users</field>
+        <field name="model">merge.user.for.login</field>
+        <field name="priority">4</field>
+        <field name="arch" type="xml">
+            <form string="Merge Users" version="7.0">
+                <field name="executed"
+                       invisible="1"
+                       />
+                <group attrs="{'invisible':[('executed', '=', False)]}">
+                    <p> Merge Executed</p>
                 </group>
-                    <p>
-                    If the names are red is because the email for these users are different to the
-                    parent user in this wizard. Please verify the users in the lines, for our
-                    security </p>
-                    <field name="user_ids" readonly="1" >
-                        <tree string="Users Found" colors="blue:authorized==True;red:same_email==False" >
-                            <field name="user_id"/>
-                            <field name="same_email" invisible="1"/>
+                <group attrs="{'invisible':[('executed', '=', True)]}">
+                    <field name="user_id"
+                           readonly="1"
+                           />
+                    <field name="type"
+                           readonly="1"
+                           />
+                    <field name="search_c"
+                           readonly="1"
+                           />
+                    <field name="user_ids"
+                           readonly="1">
+                        <tree string="Users Found"  >
+                            <field name="user_id" readonly="1"/>
+                            <field name="authorized" readonly="1"/>
                         </tree>
                     </field>
-                    <footer>
-                        <button string="Do Merge"
-                                name="execute_merge"
-                                type="object"
-                                class="oe_highlight"  />
-                        or
-                        <button string="Cancel" class="oe_link" special="cancel" />
-                    </footer>
-                </form>
-            </field>
-        </record>
-        <record model="ir.ui.view" id="main_users_in_view_form">
-            <field name="name">Search Users</field>
-            <field name="model">merge.user.for.login</field>
-            <field name="priority">4</field>
-            <field name="arch" type="xml">
-                <form string="Merge Users" version="7.0">
-                    <field name="executed"
-                           invisible="1"
-                           />
-                    <group attrs="{'invisible':[('executed', '=', False)]}">
-                        <p> Merge Executed</p>
-                    </group>
-                    <group attrs="{'invisible':[('executed', '=', True)]}">
-                        <field name="user_id"
-                               readonly="1"
-                               />
-                        <field name="type"
-                               readonly="1"
-                               />
-                        <field name="search_c"
-                               readonly="1"
-                               />
-                        <field name="user_ids"
-                               readonly="1">
-                            <tree string="Users Found"  >
-                                <field name="user_id" readonly="1"/>
-                                <field name="authorized" readonly="1"/>
-                            </tree>
-                        </field>
-                    </group>
-                    <footer>
-                        <button string="Do Merge"
-                                name="execute_merge"
-                                attrs="{'invisible':[('executed', '=', True)]}"
-                                type="object"
-                                class="oe_highlight" />
-                        or
-                        <button string="Cancel" class="oe_link" special="cancel" />
-                    </footer>
-                </form>
-            </field>
-        </record>
-        <record model="ir.ui.view" id="show_message_in_merge_view_form">
-            <field name="name">Search Users</field>
-            <field name="model">merge.user.for.login</field>
-            <field name="priority">400</field>
-            <field name="arch" type="xml">
-                <form string="Merge Users" version="7.0">
-                    <group>
-                        <field name="message" readonly="1" nolabel="1"/>
-                    </group>
-                </form>
-            </field>
-        </record>
+                </group>
+                <footer>
+                    <button string="Do Merge"
+                            name="execute_merge"
+                            attrs="{'invisible':[('executed', '=', True)]}"
+                            type="object"
+                            class="oe_highlight" />
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="show_message_in_merge_view_form">
+        <field name="name">Search Users</field>
+        <field name="model">merge.user.for.login</field>
+        <field name="priority">400</field>
+        <field name="arch" type="xml">
+            <form string="Merge Users" version="7.0">
+                <group>
+                    <field name="message" readonly="1" nolabel="1"/>
+                </group>
+            </form>
+        </field>
+    </record>
 
-        <record id="show_message_in_merge_action" model="ir.actions.act_window">
-            <field name="name">Show Message</field>
-            <field name="res_model">merge.user.for.login</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref='show_message_in_merge_view_form'/>
-            <field name="target">new</field>
-        </record>
+    <record id="show_message_in_merge_action" model="ir.actions.act_window">
+        <field name="name">Show Message</field>
+        <field name="res_model">merge.user.for.login</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref='show_message_in_merge_view_form'/>
+        <field name="target">new</field>
+    </record>
 
-        <record id="search_user_merge_action" model="ir.actions.act_window">
-            <field name="name">Do Merge</field>
-            <field name="res_model">merge.user.for.login</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref='search_users_in_view_form'/>
-            <field name="target">new</field>
-        </record>
-        <record id="validate_merge_action" model="ir.actions.act_window">
-            <field name="name">Do Merge</field>
-            <field name="res_model">merge.user.for.login</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref='apply_user_merge_view_form'/>
-            <field name="target">new</field>
-        </record>
+    <record id="search_user_merge_action" model="ir.actions.act_window">
+        <field name="name">Do Merge</field>
+        <field name="res_model">merge.user.for.login</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref='search_users_in_view_form'/>
+        <field name="target">new</field>
+    </record>
+    <record id="validate_merge_action" model="ir.actions.act_window">
+        <field name="name">Do Merge</field>
+        <field name="res_model">merge.user.for.login</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref='apply_user_merge_view_form'/>
+        <field name="target">new</field>
+    </record>
 
-        <act_window name="Do Pre Merge"
-            key2="client_action_multi"
-            res_model="merge.user.for.login"
-            src_model="res.users"
-            view_type="form"
-            view_mode="form"
-            view_id="mail_wizard_invite_view_form"
-            groups="auth_multi.group_gmail_token_manager"
-            target="new"
-            id="do_merge_users"/>
+    <act_window name="Do Pre Merge"
+        key2="client_action_multi"
+        res_model="merge.user.for.login"
+        src_model="res.users"
+        view_type="form"
+        view_mode="form"
+        view_id="mail_wizard_invite_view_form"
+        groups="auth_multi.group_gmail_token_manager"
+        target="new"
+        id="do_merge_users"/>
 
-        <act_window name="Change Fields"
-            key2="client_action_multi"
-            res_model="merge.user.for.login"
-            src_model="res.users"
-            view_type="form"
-            view_mode="form"
-            view_id="mail_wizard_change_field_view_form"
-            groups="auth_multi.group_gmail_token_manager"
-            target="new"
-            id="do_merge_users_change"/>
+    <act_window name="Change Fields"
+        key2="client_action_multi"
+        res_model="merge.user.for.login"
+        src_model="res.users"
+        view_type="form"
+        view_mode="form"
+        view_id="mail_wizard_change_field_view_form"
+        groups="auth_multi.group_gmail_token_manager"
+        target="new"
+        id="do_merge_users_change"/>
 
-    </data>
-</openerp>
+</odoo>

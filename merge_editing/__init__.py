@@ -19,5 +19,5 @@
 #
 ##############################################################################
 
-from . import merge_editing
+from . import model
 from . import wizard

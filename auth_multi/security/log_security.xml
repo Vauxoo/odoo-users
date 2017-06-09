@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<openerp>
-<data noupdate="1">
+<odoo noupdate="1">
 
     <record id="group_log_user_manager" model="res.groups">
         <field name="name">Log Groups Users/ Manager</field>
@@ -10,9 +9,9 @@
         <field name="name">Gmail Tokens/ Manager</field>
     </record>
 
-    <record model="ir.rule" id="gmail_tokens_rule">
+    <record model="ir.rule" id="oauth_tokens_rule">
         <field name="name">Gmail Tokens</field>
-        <field name="model_id" ref="model_gmail_tokens"/>
+        <field name="model_id" ref="model_oauth_tokens"/>
         <field name="global" eval="True"/>
         <field name="domain_force">[('user_id','=',user.id)]</field>
         <field eval="1" name="perm_unlink"/>
@@ -20,5 +19,4 @@
         <field eval="1" name="perm_read"/>
         <field eval="1" name="perm_create"/>
     </record>
-</data>
-</openerp>
+</odoo>

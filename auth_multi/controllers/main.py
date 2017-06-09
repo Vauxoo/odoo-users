@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from openerp import http
-from openerp.http import request
-from openerp import SUPERUSER_ID
+from odoo import http
+from odoo.http import request
 
 # ----------------------------------------------------------
 # Controller
@@ -13,34 +12,27 @@ class AuthMutiLogin(http.Controller):
     @http.route(['/do_merge/execute_merge'],
                 type='http', auth="user", website=True, multilang=True)
     def execute_merge(self, **post):
-        cr, uid, context = request.cr, request.uid, request.context
-        uid = SUPERUSER_ID
         values = {}
-        public_user = request.registry['ir.model.data'].\
-            get_object(cr, uid, 'base', 'public_user')
+        public_user = request.env.ref('base.public_user')
         # if not given: subject is contact name
-        if uid == public_user.id:
+        if request.env.user == public_user:
             url = u'/do_merge/execute_merge?token=%s' % post.get('token')
             query = {'redirect': url}
             return http.local_redirect('/web/login', query=query)
 
-        merge_login_obj = request.registry['merge.user.for.login']
-        merge_ids = merge_login_obj.search(cr, uid,
-                                           [('access_token', '=',
-                                             post.get('token'))],
-                                           context=context)
-        if merge_ids:
-            merge_brw = merge_login_obj.browse(cr, uid, merge_ids[0],
-                                               context=context)
+        merge_login_obj = request.env['merge.user.for.login']
+        merge_brw = merge_login_obj.sudo().search([('access_token', '=',
+                                                    post.get('token'))])
+        if merge_brw:
             if merge_brw.executed:
                 values['process'] = 'used'
                 values['message'] = 'Token Excecuted'
 
-                return request.\
-                    render("auth_multi.auth_multi_token_used", values)
+                return request.render(
+                    "auth_multi.auth_multi_token_used", values)
 
             values['main_name'] = merge_brw.user_id.name
-            values['same_user'] = (merge_brw.user_id.id == uid)
+            values['same_user'] = (merge_brw.user_id == request.env.user)
             names = []
             for users in merge_brw.user_ids:
                 names.append((users.user_id.name, users.authorized))
@@ -55,18 +47,14 @@ class AuthMutiLogin(http.Controller):
     @http.route(['/do_merge/apply_merge'], type='http',
                 auth="user", website=True, multilang=True)
     def apply_merge(self, **post):
-        cr, uid, context = request.cr, request.uid, request.context
         values = {}
-        context.update({'record': post.get('token')})
-        merge_login_obj = request.registry['merge.user.for.login']
-        result = merge_login_obj.execute_merge(cr, uid, False, context)
-        uid = SUPERUSER_ID
-        merge_ids = merge_login_obj.\
-            search(cr, uid, [('access_token', '=', post.get('token'))],
-                   context=context)
-        if merge_ids:
-            merge_brw = merge_login_obj.browse(cr, uid, merge_ids[0],
-                                               context=context)
+        merge_login_obj = request.env['merge.user.for.login'].with_context(
+            {'record': post.get('token')}
+        )
+        result = merge_login_obj.execute_merge()
+        merge_brw = merge_login_obj.sudo().search(
+            [('access_token', '=', post.get('token'))])
+        if merge_brw:
             values['main_name'] = merge_brw.user_id.name
             names = []
             auth = []

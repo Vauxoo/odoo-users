@@ -1,14 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<openerp>
-  <data>
+<odoo>
     <record model="ir.ui.view" id="inherit_user_token_form_view">
-      <field name="name">User.Gmail.Tokens.View</field>
+      <field name="name">User.Oauth.Tokens.View</field>
       <field name="model">res.users</field>
       <field name="inherit_id" ref="base.view_users_form"/>
       <field name="arch" type="xml">
         <xpath expr="//page[last()]" position="after">
-            <page string='Gmail Accounts'>
-                <field name="gmail_tokens" >
+            <page string='Oauth Accounts'>
+                <field name="oauth_tokens" >
                     <tree>
                         <field name="name" />
                         <field name="oauth_provider_id" invisible="1"/>
@@ -21,85 +20,86 @@
       </field>
     </record>
 
-        <record id="base.view_users_form_simple_modif" model="ir.ui.view">
+        <record id="view_users_form_simple_modif" model="ir.ui.view">
             <field name="name">res.users.preferences.form</field>
             <field name="model">res.users</field>
-            <field eval="18" name="priority"/>
+            <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+            <field eval="35" name="priority"/>
             <field name="arch" type="xml">
-            <form string="Users">
-                <sheet>
-                    <div class="oe_right oe_button_box" name="buttons">
-                        <button name="preference_change_password"
-                                type="object"
-                                icon="fa fa-key"
-                                class="oe_inline oe_stat_button"
-                                string="Change Pass" />
-                        <button name="search_users_for_merge"
-                                type="object"
-                                class="oe_inline oe_stat_button"
-                                icon="fa fa-users"
-                                groups='base.group_user'
-                                string="Claim Users" />
-                        <button name="preference_save"
-                                type="object"
-                                icon="fa fa-floppy-o"
-                                class="oe_inline oe_stat_button"
-                                string="Save"/>
-                        <button name="preference_cancel"
-                                string="Cancel"
-                                icon="fa fa-times-circle"
-                                special="cancel"
-                                class="oe_inline oe_stat_button"
-                                />
-                    </div>
-                    <notebook>
-                        <page string="Main Info">
-                                    <field name="image" widget='image' class="oe_avatar" />
+            <xpath expr="//form" position="replace">
+                <form string="Users">
+                    <sheet>
+                        <div class="oe_right oe_button_box" name="buttons">
+                            <button name="preference_change_password"
+                                    type="object"
+                                    icon="fa-key"
+                                    class="oe_inline oe_stat_button"
+                                    string="Change Pass" />
+                            <button name="search_users_for_merge"
+                                    type="object"
+                                    class="oe_inline oe_stat_button"
+                                    icon="fa-users"
+                                    groups='base.group_user'
+                                    string="Claim Users" />
+                            <button name="preference_save"
+                                    type="object"
+                                    icon="fa-floppy-o"
+                                    class="oe_inline oe_stat_button"
+                                    string="Save"/>
+                            <button name="preference_cancel"
+                                    string="Cancel"
+                                    icon="fa-times-circle"
+                                    special="cancel"
+                                    class="oe_inline oe_stat_button"
+                                    />
+                        </div>
+                        <notebook>
+                            <page string="Main Info">
+                                <field name="image" widget='image' class="oe_avatar" />
+                                <group col="1" colspan="6">
                                     <field name="name" readonly="1" />
                                     <field name="login" readonly="1"/>
-                                    <label for="lang"/>
                                     <field name="lang"/>
-                                    <label for="tz"/>
                                     <field name="tz"/>
-                                    <label for="company_id"/>
                                     <field name="company_id" widget="selection" readonly="0"
                                         groups="base.group_multi_company" />
-                                    <label for="email"/>
                                     <field name="email" widget="email" readonly="0"/>
+                                </group>
                                     <label for="signature"/>
                                     <field name="signature" readonly="0" nolabel="1"/>
-                        </page>
-                        <page string="My Related Accounts">
-                            <field readonly="1" name="gmail_tokens" mode="kanban" >
-                                 <kanban>
-                                    <field name="name"/>
-                                    <templates>
-                                        <t t-name="kanban-box">
-                                            <div style="position: relative" class="oe_kanban_card">
-                                                <a t-if="! read_only_mode" type="delete" style="position: absolute; right: 0; padding: 4px; diplay: inline-block">X</a>
-                                                <div class="oe_module_vignette">
-                                                    <div class="oe_module_desc">
-                                                        <div class="oe_kanban_box_content oe_kanban_color_bglight oe_kanban_color_border">
-                                                            <table class="oe_kanban_table">
-                                                                <tr>
-                                                                    <td class="oe_kanban_title1" align="left" valign="middle">
-                                                                        <h4><field name="oauth_provider_id"/></h4>
-                                                                        <h4><field name="name"/></h4>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
+                            </page>
+                            <page string="My Related Accounts">
+                                <field readonly="1" name="oauth_tokens" mode="kanban" >
+                                     <kanban>
+                                        <field name="name"/>
+                                        <templates>
+                                            <t t-name="kanban-box">
+                                                <div style="position: relative" class="oe_kanban_card">
+                                                    <a t-if="! read_only_mode" type="delete" style="position: absolute; right: 0; padding: 4px; diplay: inline-block">X</a>
+                                                    <div class="oe_module_vignette">
+                                                        <div class="oe_module_desc">
+                                                            <div class="oe_kanban_box_content oe_kanban_color_bglight oe_kanban_color_border">
+                                                                <table class="oe_kanban_table">
+                                                                    <tr>
+                                                                        <td class="oe_kanban_title1" align="left" valign="middle">
+                                                                            <h4><field name="oauth_provider_id"/></h4>
+                                                                            <h4><field name="name"/></h4>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </t>
-                                    </templates>
-                                </kanban>
-                            </field>
-                        </page>
-                    </notebook>
-                </sheet>
-                </form>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    </form>
+                </xpath>
             </field>
         </record>
         <record id="base.action_res_users_my" model="ir.actions.act_window">
@@ -111,5 +111,4 @@
             <field name="view_mode">form</field>
         </record>
 
-</data>
-</openerp>
+</odoo>

@@ -21,15 +21,15 @@
 ##############################################################################
 
 
-from openerp import models, fields, api, _
-from openerp import osv
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 
 class MergeObject(models.Model):
     _name = "merge.object"
 
-    name = fields.Char("Name", size=64, required=True, select=1)
-    model_id = fields.Many2one('ir.model', 'Model', required=True, select=1)
+    name = fields.Char("Name", size=64, required=True, index=1)
+    model_id = fields.Many2one('ir.model', 'Model', required=True, index=1)
     field_ids = fields.Many2many('ir.model.fields', 'merge_field_rel',
                                  'merge_id', 'field_id', 'Fields')
     ref_ir_act_window = fields.Many2one('ir.actions.act_window',
@@ -148,6 +148,6 @@ class MergeObject(models.Model):
                 if self.ref_ir_value:
                     ir_values_obj.unlink(record.ref_ir_value.id)
             except:
-                raise osv.except_osv(_("Warning"),
-                                     _("Deletion of the action record "
-                                       "failed."))
+                raise UserError(_("Warning"),
+                                _("Deletion of the action record "
+                                  "failed."))
