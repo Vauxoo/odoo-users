@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=W1648
 import urlparse
+from urlparse import parse_qsl
 import requests
 import simplejson
 import werkzeug.utils
@@ -38,6 +39,8 @@ class OAuthControllerInherit(OAuthController):
                     else:
                         url = endpoint + '?' + params
                     furl = requests.get(url)
-                    response = furl.json() if furl.status_code == 200 else {}
+                    response = dict(
+                        parse_qsl(furl.text)
+                    ) if furl.status_code == 200 else {}
                     kw.update({'access_token': response.get('access_token')})
         return super(OAuthControllerInherit, self).signin(**kw)

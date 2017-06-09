@@ -1,19 +1,17 @@
 <?xml version="1.0"?>
-<openerp>
-    <data noupdate="1">
-        <record id="provider_uber" model="auth.oauth.provider">
-            <field name="name">Uber OAuth2</field>
-            <field name="auth_endpoint">https://login.uber.com/oauth/v2/authorize</field>
-            <field name="scope">partner.accounts partner.payments partner.trips</field>
-            <field name="validation_endpoint">https://api.uber.com/v1/partners/me</field>
-            <field name="data_endpoint"></field>
-            <field name="url_get_token">https://login.uber.com/oauth/v2/token</field>
-            <field name="body">Log in with Uber(Drivers)</field>
-        </record>
+<odoo noupdate="1">
+    <record id="provider_uber" model="auth.oauth.provider">
+        <field name="name">Uber OAuth2</field>
+        <field name="auth_endpoint">https://login.uber.com/oauth/v2/authorize</field>
+        <field name="scope">partner.accounts partner.payments partner.trips</field>
+        <field name="validation_endpoint">https://api.uber.com/v1/partners/me</field>
+        <field name="data_endpoint"></field>
+        <field name="url_get_token">https://login.uber.com/oauth/v2/token</field>
+        <field name="body">Log in with Uber(Drivers)</field>
+    </record>
 
-        <record id="default_uber_oauth_redirect_config" model="ir.config_parameter">
-            <field name="key">uber.oauth.redirect</field>
-            <field name="value">https://current_url/auth_oauth/signin</field>
-        </record>
-    </data>
-</openerp>
+    <record id="default_uber_oauth_redirect_config" model="ir.config_parameter">
+        <field name="key">uber.oauth.redirect</field>
+        <field name="value">https://current_url/auth_oauth/signin</field>
+    </record>
+</odoo>

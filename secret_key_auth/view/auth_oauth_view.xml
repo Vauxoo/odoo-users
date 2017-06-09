@@ -1,15 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<openerp>
-  <data>
+<odoo>
     <record model="ir.ui.view" id="client_secret_oauth_view_form">
-      <field name="name">Github Auth View</field>
-      <field name="model">auth.oauth.provider</field>
-      <field name="inherit_id" ref="auth_oauth.view_oauth_provider_form"/>
-      <field name="arch" type="xml">
+        <field name="name">Github Auth View</field>
+        <field name="model">auth.oauth.provider</field>
+        <field name="inherit_id" ref="auth_oauth.view_oauth_provider_form"/>
+        <field name="arch" type="xml">
         <xpath expr="//field[@name='client_id']" position="after">
             <field name="client_secret" />
         </xpath>
-      </field>
+        </field>
     </record>
-</data>
-</openerp>
+</odoo>

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import urlparse
-import werkzeug.urls
 import base64
+import werkzeug.urls
 import requests
 from odoo import models, api, fields, _
 from odoo.exceptions import AccessDenied

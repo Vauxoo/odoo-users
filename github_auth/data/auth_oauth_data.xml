@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
-<openerp>
-    <data noupdate="1">
-        <record id="provider_github" model="auth.oauth.provider">
-            <field name="name">Github OAuth2</field>
-            <field name="auth_endpoint">https://github.com/login/oauth/authorize</field>
-            <field name="scope">https://api.github.com/user https://api.github.com/user/emails</field>
-            <field name="validation_endpoint">https://api.github.com/user</field>
-            <field name="data_endpoint"></field>
-            <field name="url_get_token">https://github.com/login/oauth/access_token</field>
-            <field name="css_class">fa fa-github</field>
-            <field name="body">Log in with Github</field>
-        </record>
-    </data>
-</openerp>
+<odoo noupdate="1">
+    <record id="provider_github" model="auth.oauth.provider">
+        <field name="name">Github OAuth2</field>
+        <field name="auth_endpoint">https://github.com/login/oauth/authorize</field>
+        <field name="scope">https://api.github.com/user https://api.github.com/user/emails</field>
+        <field name="validation_endpoint">https://api.github.com/user</field>
+        <field name="data_endpoint"></field>
+        <field name="url_get_token">https://github.com/login/oauth/access_token</field>
+        <field name="css_class">fa fa-github</field>
+        <field name="body">Log in with Github</field>
+    </record>
+</odoo>
