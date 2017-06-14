@@ -128,6 +128,7 @@
                     <filter string="Date" context="{'group_by':'pickup_date'}"/>
                     <filter string="Month" name='monthgroup' context="{'group_by':'pickup_date:month'}"/>
                     <filter string="Day" name='daygroup' context="{'group_by':'pickup_date:day'}"/>
+                    <filter string="Week" name='weekgroup' context="{'group_by':'pickup_date:week'}"/>
                     <filter string="Year" name='yeargroup' context="{'group_by':'pickup_date:year'}"/>
                     <separator/>
                     <filter string="Driver" name='drivergroup' context="{'group_by':'driver_id'}"/>

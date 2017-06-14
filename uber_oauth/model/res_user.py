@@ -102,7 +102,7 @@ class ResUsers(models.Model):
             'drop_off': (trip.get('dropoff', {}).get('timestamp')
                          if trip.get('dropoff') else False),
             'distance': trip.get('distance'),
-            'duration': (trip.get('duration', 0) / 60.0),
+            'duration': (trip.get('duration') / 60.0),
             'status': trip.get('status'),
             'start_city': trip.get('start_city').get('display_name'),
             'start_latitude': trip.get('start_city').get('latitude'),
@@ -116,42 +116,61 @@ class ResUsers(models.Model):
         return val
 
     @api.multi
+    def create_uber_trip(self, val):
+        """Used to avoid having the same part of code several times
+        :param val: New trip values
+        :type val: dict
+        """
+        uber = self.env['uber.trips']
+        if not uber.search_count([('trip', '=', val.get('trip')),
+                                  ('driver_id', '=', self.partner_id.id)]):
+            uber.sudo().create(val)
+
+    @api.multi
+    def create_trips(self, info, url):
+        """Using the information returned by Uber to create the trips in
+        Odoo
+        :param info: Json returned by Uber API
+        :type info: dict
+        :param url: Url used to get information from Uber API
+        :type url: str
+        """
+        self.ensure_one()
+        for trip in info.get('trips', []):
+            val = self.get_dict_trips_values(trip)
+            self.create_uber_trip(val)
+        if info.get('count') > 50:
+            last_trip = (val.get('trip_status_ids') and
+                         val.get('trip_status_ids')[0][2].get('time'))
+            params = werkzeug.url_encode(
+                {'access_token': self.oauth_access_token,
+                 'limit': 50,
+                 'to_time': last_trip})
+            ninfo = requests.get(url + '?' + params)
+            ninfo = ninfo.json()
+            self.create_trips(ninfo, url)
+
+    @api.multi
     def get_driver_trips(self):
         """Get the trips history of a driver"""
         uber = self.env['uber.trips']
         for rec in self:
             prov = self.env.ref('uber_oauth.provider_uber')
-            if not prov == rec.oauth_provider_id:
+            if prov != rec.oauth_provider_id:
                 return  # Add a raise here
             url = 'https://api.uber.com/v1/partners/trips'
-            params = werkzeug.url_encode(
-                {'access_token': rec.oauth_access_token,
-                 'limit': 50})
+            dict_par = {
+                'access_token': rec.oauth_access_token,
+                'limit': 50}
+            old_trips = uber.search(
+                [('driver_id', '=', rec.partner_id.id),
+                 ('pickup', '!=', False)],
+                limit=1,
+                order='id DESC')
+            if old_trips:
+                dict_par['to_time'] = old_trips.pickup
+            params = werkzeug.url_encode(dict_par)
             info = requests.get(url + '?' + params)
             info = info.json()
-            if info.get('count') > 50:
-                loops = int(info.get('count') / 50) + 1
-                for loop in range(loops):
-                    for trip in info.get('trips', []):
-                        val = rec.get_dict_trips_values(trip)
-                        if not uber.search_count(
-                            [('trip', '=', val.get('trip')),
-                             ('driver_id', '=', rec.partner_id.id)]):
-                            uber.sudo().create(val)
-                    last_trip = (val.get('trip_status_ids', 0) and
-                                 val.get('trip_status_ids',
-                                         loop)[0][2].get('time'))
-                    params = werkzeug.url_encode(
-                        {'access_token': rec.oauth_access_token,
-                         'limit': 50,
-                         'to_time': last_trip})
-                    info = requests.get(url + '?' + params)
-                    info = info.json()
-            else:
-                for trip in info.get('trips', []):
-                    val = rec.get_dict_trips_values(trip)
-                    if not uber.search_count(
-                        [('trip', '=', val.get('trip')),
-                         ('driver_id', '=', rec.partner_id.id)]):
-                        uber.sudo().create(val)
+            rec.create_trips(info, url)
         return True
