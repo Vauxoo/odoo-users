@@ -71,6 +71,9 @@ class ResUsers(models.Model):
         """Modified to add the values returned by uber api"""
         res = super(ResUsers, self)._generate_signup_values(provider,
                                                             validation, params)
+        uber = self.env.ref('uber_oauth.provider_uber')
+        if uber.id != provider:
+            return res
         if (validation.get('picture') and
                 urlparse.urlparse(validation.get('picture')).scheme):
             res.update(
