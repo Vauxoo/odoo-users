@@ -28,23 +28,24 @@
               <div class="panel-heading alert-success">Proccess Completed</div>
               <div class="panel-body">
                   <t t-if='auth == True'>
-                  <p>Now you can login with <span t-esc="main_name"/> user with these different gmail acounts:</p>
+                  <p>Now you can login with <span t-esc="main_name"/> user with these different acounts:</p>
+                    <t t-foreach="users" t-as="user">
+                        <p><span readonly="1" t-esc="user"/></p>
+                    </t>
+                    <form method="get" t-attf-action="/web/login">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <table class="table">
+                                <footer>
+                                    <button aling='center' class="btn btn-success btn-xs img-rounded">Login</button>
+                                </footer>
+                        </table>
+                    </form>
                   </t>
                   <t t-if='auth == False'>
                   <p>Authorization accepted. Only you need the authorization of the others users involved in the merge process</p>
                   </t>
               </div>
               <!-- Table -->
-              <form method="post" t-attf-action="/web/login?">
-              <table class="table">
-                    <tr>
-                        <td><span>Login</span></td>
-                    </tr>
-                      <footer>
-                     <button aling='center' class="btn btn-success btn-xs img-rounded">Login</button>
-                      </footer>
-              </table>
-           </form>
             </div>
 
         </t>
@@ -60,7 +61,7 @@
                   </p>
                   </t>
                   <t t-if='same_user == True'>
-                  <p>We need your authorization for we can merge these users with your user</p>
+                  <p>We need your authorization so we can merge these users with your user</p>
                   </t>
               </div>
               <!-- Table -->

@@ -20,9 +20,9 @@
 ##############################################################################
 {
     'name': 'Client Secret Auth',
-    'version': '10.0.0.1.0',
+    'version': '11.0.0.1.0',
     'author': 'Vauxoo',
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'category': 'Hidden',
     'website': 'http://www.vauxoo.com',
     'images': [],

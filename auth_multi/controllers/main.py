@@ -63,6 +63,7 @@ class AuthMutiLogin(http.Controller):
                 auth.append(users.authorized)
             values['auth'] = all(auth)
             values['process'] = 'error'
+            values['users'] = names
             values['message'] = 'Error'
 
         query = {'redirect': u'do_merge/execute_merge?token=%s'
@@ -70,5 +71,6 @@ class AuthMutiLogin(http.Controller):
         return isinstance(result, tuple) and \
             http.local_redirect('/web/login', query=query) or \
             result and \
-            http.local_redirect('/web/login', query={'redirect': '/'}) or \
+            request.render('auth_multi.auth_multi_proccess_completed',
+                           values) or \
             request.render("auth_multi.auth_multi_token_used", values)

@@ -21,35 +21,32 @@
 
 import os
 import binascii
+import re
 from odoo import tools, models, api, _, fields
 from odoo.exceptions import UserError
 from odoo.addons.mail.models.mail_template import mako_template_env
 from odoo.tools.safe_eval import safe_eval
-import re
 
 
 class MergeUserForLoginLine(models.Model):
     _name = 'merge.user.for.login.line'
 
-    same_email = fields.Boolean('Same Email',
-                                help='To identifed if this '
+    same_email = fields.Boolean(help='To identify if this '
                                 'line has the same email')
     user_id = fields.Many2one('res.users', 'Main User',
                               help='Main users, result of all '
                                    'process')
-    login = fields.Many2one('merge.user.for.login', 'Login')
-    authorized = fields.Boolean('Authorized',
-                                help='True if this line was authorized')
+    login = fields.Many2one('merge.user.for.login')
+    authorized = fields.Boolean(help='True if this line was authorized')
 
 
 class MergeUserForLogin(models.Model):
     _name = 'merge.user.for.login'
     _description = 'Merge Login'
 
-    executed = fields.Boolean('Excecuted',
-                              help='True if this line was merged')
-    message = fields.Text('Message', help='Info about search')
-    search_c = fields.Char('Criterial',
+    executed = fields.Boolean(help='True if this line was merged')
+    message = fields.Text(help='Info about search')
+    search_c = fields.Char('Value to Search',
                            help='Name or  email to search')
     user_id = fields.Many2one('res.users', 'Main User',
                               default=lambda self: self.env.user,
@@ -62,9 +59,9 @@ class MergeUserForLogin(models.Model):
                              ('email', 'Email')],
                             'Search Type',
                             default='email',
-                            help='Criterial search to '
+                            help='Type of value to search to '
                             'determinate if an user is duplicated')
-    access_token = fields.Char('Access Token')
+    access_token = fields.Char()
 
     _rec_name = 'access_token'
 
@@ -77,9 +74,9 @@ class MergeUserForLogin(models.Model):
         token = binascii.hexlify(os.urandom(20))
         if self.search([('access_token', '=', token)]):
             return self.random_token()
-        return token
+        return token.decode()
 
-    @api.multi
+    @api.model
     def change_gmail_fields(self):
         """ Originally for do login with google, we use only 3 fields that allow to
         login with one
@@ -101,10 +98,12 @@ class MergeUserForLogin(models.Model):
                     'oauth_tokens':
                     [(0, 0,
                       {'name': user_brw.login,
-                       'oauth_provider_id': (user_brw.oauth_provider_id and
-                                             user_brw.oauth_provider_id.id),
+                       'oauth_provider_id': user_brw.oauth_provider_id.id,
                        'oauth_uid': user_brw.oauth_uid,
-                       'oauth_access_token': user_brw.oauth_access_token})]
+                       'oauth_access_token': user_brw.oauth_access_token})],
+                    'oauth_provider_id': False,
+                    'oauth_uid': False,
+                    'oauth_access_token': False,
                 })
         return True
 
@@ -112,9 +111,9 @@ class MergeUserForLogin(models.Model):
     def send_emails(self, main_id, user_id, action, res_id):
         """ Send an email to ask permission to do merge with users that have the
         same email account
-        @param user_id: User id that receives the notification mail
-        @param action_id: String with the token of the record created
-        @param res_id: Id of record created to do merge
+        :param user_id: User id that receives the notification mail
+        :param action_id: String with the token of the record created
+        :param res_id: Id of record created to do merge
         """
         mail_mail = self.env['mail.mail']
         partner_obj = self.env['res.partner'].sudo()
@@ -221,37 +220,40 @@ class MergeUserForLogin(models.Model):
                     'executed': True
                 })
                 body = template.\
-                    render({'r':
-                            {'message': _('Process Completed'),
-                             'request': _('Proccess finished users merged')}})
+                    render(
+                        {'r':
+                         {'message': _('Process Completed'),
+                          'request': _(
+                              'Process finished the users were merged')}})
                 self.update({'message': body})
-            else:
-                token = self.sudo().random_token()
-                wzr_brw.write({
-                    'access_token': token,
-                    'user_ids': [(0, 0, {'user_id': wzr_brw.user_id.id})]
-                })
-                user_mails = []
-                for i in wzr_brw.user_ids:
-                    if i.user_id.id not in user_mails:
-                        self.send_emails(self._uid, i.user_id.id, token,
-                                         wzr_brw.id)
-                    user_mails.append(i.user_id.id)
-                if wzr_brw.user_id.id not in user_mails:
-                    self.send_emails(self._uid, wzr_brw.user_id.id, token,
+                return True
+
+            token = self.sudo().random_token()
+            wzr_brw.write({
+                'access_token': token,
+                'user_ids': [(0, 0, {'user_id': wzr_brw.user_id.id})]
+            })
+            user_mails = []
+            for i in wzr_brw.user_ids:
+                if i.user_id.id not in user_mails:
+                    self.send_emails(self._uid, i.user_id.id, token,
                                      wzr_brw.id)
+                user_mails.append(i.user_id.id)
+            if wzr_brw.user_id.id not in user_mails:
+                self.send_emails(self._uid, wzr_brw.user_id.id, token,
+                                 wzr_brw.id)
 
     @api.onchange('user_id', 'type', 'search_c', 'user_ids')
     @api.multi
     def onchange_search(self):
         """ Search user with the same email sent from view and return the result or
         a message
-        @type: String with the field used to find user, this may be name or
+        :type: String with the field used to find user, this may be name or
         email
-        @param: String with the name or email used to find user with same
-        Criterial
+        :param: String with the name or email used to find user with same
+        Criteria
         @user: User ID of the main user
-        return all user found and a messagen reporting it
+        return all user found and a message reporting it
         """
         user_obj = self.env['res.users']
         parent_brw = self.user_id
@@ -271,15 +273,6 @@ class MergeUserForLogin(models.Model):
                 re.match("[^@]+@[^@]+\.[^@]+", self.search_c) or self.search_c:
             users += user_obj.sudo().\
                 search([('%s' % self.type, '=', self.search_c)]).ids
-        # if line_obj.sudo().search([('user_id', 'in', users),
-        #                            ('login.executed', '=', True)]) or \
-        #         self.sudo().search([('user_id', 'in', users),
-        #                     ('executed', '=', True)]):
-        #     res['value'] = {
-        #         'message': _('This user is being used in another '
-        #                      'merge that is not validated yet')}
-        #     self.update(res.get('value'))
-        #     return res
         old_token = self.sudo().search([('user_id', 'in', users),
                                         ('executed', '=', False)])
         if old_token:
@@ -302,18 +295,16 @@ class MergeUserForLogin(models.Model):
             if self.search_c:
                 body = template.\
                     render({'r': {'message': _('User not Found'),
-                                  'request': _('The email placed in '
-                                               'the criterial field '
+                                  'request': _('The value filled out '
+                                               'in the field '
                                                'was not found, please '
                                                'check it and try again')}})
                 res['value'] = {'message': body}
 
-        if self.user_ids:
-            for i in self.user_ids:
-                if i and i[0] == 0:
-                    if not i[2].get('user_id', 0) in users:
-                        user += [i[2]]
-            res['value'].update({'user_ids': user})
+        for i in self.user_ids:
+            if i and i[0] == 0 and not i[2].get('user_id', 0) in users:
+                user += [i[2]]
+        res['value'].update({'user_ids': user})
 
         self.update(res.get('value'))
 
@@ -323,7 +314,6 @@ class MergeUserForLogin(models.Model):
         message reporting
         why you can't do it
         """
-        fuse_obj = self.env['merge.fuse.wizard']
         token = self._context.get('record', False)
         user_obj = self.env['res.users'].sudo()
         merge_ids = self._ids and self or \
@@ -341,18 +331,121 @@ class MergeUserForLogin(models.Model):
             if anony:
                 return (False, 'Login')
             merge_brw = merge_ids and merge_ids[0]
-            if all([i.authorized for i in merge_brw.user_ids]):
+            authorized = [i.authorized for i in merge_brw.user_ids]
+            if all(authorized):
                 user_ids = [i.user_id.id for i in merge_brw.user_ids]
-                fuse_id = fuse_obj.sudo().\
-                    with_context({'active_model': 'res.users',
-                                  'active_id': parent_brw.id,
-                                  'active_ids': user_ids}).\
-                    create({})
-                fuse_id.merge_records('res_users', parent_brw.id, user_ids,
-                                      'res.users')
+                self.merge_records('res_users', parent_brw.id, user_ids,
+                                   'res.users')
                 merge_brw.write({
                     'executed': True
                 })
                 return True
+            return any(authorized)
 
         return False
+
+    def merge_records(self, table, main_id, old_ids, orm_model):
+        """Method used to merge records in all tables with
+        a reference to the objects to merge
+        :param tabel: Table name of the records to merge. i.e. res_users
+        :type tabel: str
+        :param main_id: Id of the main record, this id will replace the other
+                        ids in the tables related
+        :type main_id: integer
+        :param old_ids: List  with the ids of the records to merge
+        :type old_ids: list or tuple
+        :param orm_model: Name of the model for the orm. i.e. res.users
+        :type orm_model: str
+        """
+
+        self._cr.execute('''
+DROP FUNCTION IF EXISTS merge_records(model_name varchar, main_id integer,
+                                      old_ids integer[], orm_model varchar);
+CREATE OR REPLACE FUNCTION merge_records(model_name varchar, main_id integer,
+                                         old_ids integer[], orm_model varchar)
+RETURNS float AS $$
+    DECLARE
+
+        value_table varchar;
+        value_column varchar;
+        values RECORD;
+        proper_id integer;
+        record_id integer;
+        amount float;
+    BEGIN
+        FOR value_table, value_column IN SELECT cl1.relname as table,
+                             att1.attname as column
+                      FROM pg_constraint as con, pg_class as cl1,
+                           pg_class as cl2, pg_attribute as att1,
+                           pg_attribute as att2
+                      WHERE con.conrelid = cl1.oid
+                           AND con.confrelid = cl2.oid
+                           AND array_lower(con.conkey, 1) = 1
+                           AND con.conkey[1] = att1.attnum
+                           AND att1.attrelid = cl1.oid
+                           AND cl2.relname = model_name
+                           AND att2.attname = 'id'
+                           AND array_lower(con.confkey, 1) = 1
+                           AND con.confkey[1] = att2.attnum
+                           AND att2.attrelid = cl2.oid
+                           AND con.contype = 'f' LOOP
+
+            UPDATE
+                ir_property
+            SET
+                res_id = orm_model|| ',' || main_id
+            WHERE
+                split_part(res_id, ',', 1) = orm_model
+                AND split_part(res_id, ',', 2)::integer = ANY(old_ids);
+
+            UPDATE
+                ir_property
+            SET
+                value_reference = orm_model|| ',' || main_id
+            WHERE
+                split_part(value_reference, ',', 1) = orm_model AND
+                split_part(value_reference, ',', 2)::integer = ANY(old_ids);
+
+            BEGIN
+                EXECUTE 'UPDATE ' || value_table ||
+                        ' SET ' || value_column || ' = ' || main_id ||
+                        ' WHERE ' || value_column || ' = ANY('
+                            || quote_literal(old_ids) || ')';
+
+            EXCEPTION WHEN unique_violation THEN
+                FOREACH record_id SLICE 0 IN ARRAY old_ids LOOP
+                    BEGIN
+                        EXECUTE 'UPDATE ' || value_table ||
+                                ' SET ' || value_column || ' = ' || main_id ||
+                                ' WHERE ' || value_column || ' = '
+                                    || record_id;
+
+                    EXCEPTION WHEN unique_violation THEN
+                        -- Ignore duplicate inserts.
+                        amount := 1;
+    /* RAISE NOTICE USING MESSAGE='Unique Constraint Error '|| value_table; */
+                    END;
+                END LOOP;
+            END;
+            UPDATE
+                mail_message
+            SET
+                res_id = main_id
+            WHERE
+                model = orm_model AND res_id = ANY(old_ids);
+
+            UPDATE
+                ir_attachment
+            SET
+                res_id = main_id
+            WHERE
+                res_model = orm_model AND res_id = ANY(old_ids);
+        END LOOP;
+        RETURN amount; END;
+    $$ LANGUAGE plpgsql;''')
+        old_ids_str = re.sub(r'^(\(|\[)', '{', str(old_ids))
+        old_ids_str = re.sub(r'(\)|\])$', '}', old_ids_str)
+
+        self._cr.execute('SELECT merge_records(CAST(%s AS varchar),'
+                         '%s, %s, CAST(%s AS varchar))',
+                         (table, main_id, old_ids_str, orm_model))

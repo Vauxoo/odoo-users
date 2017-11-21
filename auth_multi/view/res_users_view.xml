@@ -24,10 +24,23 @@
             <field name="name">res.users.preferences.form</field>
             <field name="model">res.users</field>
             <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
-            <field eval="35" name="priority"/>
+            <field eval="99" name="priority"/>
             <field name="arch" type="xml">
             <xpath expr="//form" position="replace">
                 <form string="Users">
+                <header>
+                    <button name="preference_save"
+                            type="object"
+                            icon="fa-floppy-o"
+                            class="oe_inline oe_stat_button"
+                            string="Save"/>
+                    <button name="preference_cancel"
+                            string="Cancel"
+                            icon="fa-times-circle"
+                            special="cancel"
+                            class="oe_inline oe_stat_button"
+                            />
+                </header>
                     <sheet>
                         <div class="oe_right oe_button_box" name="buttons">
                             <button name="preference_change_password"
@@ -41,17 +54,6 @@
                                     icon="fa-users"
                                     groups='base.group_user'
                                     string="Claim Users" />
-                            <button name="preference_save"
-                                    type="object"
-                                    icon="fa-floppy-o"
-                                    class="oe_inline oe_stat_button"
-                                    string="Save"/>
-                            <button name="preference_cancel"
-                                    string="Cancel"
-                                    icon="fa-times-circle"
-                                    special="cancel"
-                                    class="oe_inline oe_stat_button"
-                                    />
                         </div>
                         <notebook>
                             <page string="Main Info">

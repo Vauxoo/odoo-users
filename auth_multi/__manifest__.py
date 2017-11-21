@@ -19,18 +19,15 @@
 #
 ##############################################################################
 {
-    'name': 'Auth Multi Login',
-    'version': '10.0.0.1.0',
+    'name': 'OAuth2 Multi Login',
+    'version': '11.0.0.1.0',
     'author': 'Vauxoo',
     'category': 'Hidden',
     'website': 'http://www.vauxoo.com',
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'depends': [
         'web',
-        'base',
         'auth_oauth',
-        'merge_editing',
-        'auth_signup',
     ],
     'data': [
         'data/website_crm_data.xml',
@@ -40,7 +37,12 @@
         'view/auth_view.xml',
         'wizard/merge_user_view.xml',
     ],
+    'external_dependencies': {
+        'python': [
+            'simplejson']
+    },
     'installable': True,
     'auto_install': False,
+    'post_init_hook': 'post_init_hook',
     'web_preload': False,
 }

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=W1648
-import urlparse
-from urlparse import parse_qsl
+from urllib.parse import urlparse, parse_qsl
 import requests
 import simplejson
 import werkzeug.utils
@@ -34,11 +33,10 @@ class OAuthControllerInherit(OAuthController):
                     'client_secret': p_brw.client_secret})
                 endpoint = p_brw.url_get_token
                 if endpoint:
-                    if urlparse.urlparse(endpoint)[4]:
-                        url = endpoint + '&' + params
-                    else:
-                        url = endpoint + '?' + params
-                    furl = requests.get(url)
+                    furl = requests.get(
+                        endpoint +
+                        ('&' if urlparse(endpoint)[4] else '?') +
+                        params)
                     response = dict(
                         parse_qsl(furl.text)
                     ) if furl.status_code == 200 else {}

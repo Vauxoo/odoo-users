@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<odoo noupdate="1">
-    <record id="auth_oauth.provider_facebook" model="auth.oauth.provider">
-        <field name="scope">public_profile,email</field>
-        <field name="validation_endpoint">https://graph.facebook.com/me?fields=email,name</field>
-    </record>
-</odoo>

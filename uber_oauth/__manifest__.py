@@ -38,7 +38,7 @@
         'view/res_partner_view.xml',
         'view/uber_trips_view.xml',
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     'web_preload': False,
 }

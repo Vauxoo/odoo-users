@@ -57,7 +57,7 @@
             <form string="Merge Users" version="7.0">
                 <group>
                 <field name="user_id" readonly="1"/>
-                <field name="type" readonly="1"/>
+                <field name="type"/>
                 <field name="search_c"
                        placeholder="i.e.: user@gmail.com"
                        />
@@ -91,7 +91,7 @@
             <form string="Merge Users" version="7.0">
                 <group>
                 <field name="user_id" readonly="1"/>
-                <field name="type" readonly="1"/>
+                <field name="type"/>
                 <field name="search_c"
                        placeholder="i.e.: user@gmail.com"
                        />

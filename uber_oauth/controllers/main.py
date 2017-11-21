@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-import urlparse
+from urllib.parse import urlparse
 import werkzeug.utils
 import requests
 import simplejson
@@ -57,10 +57,8 @@ class OAuthControllerInherit(OAuthController):
                     'client_secret': p_brw.client_secret})
                 endpoint = p_brw.url_get_token
                 if endpoint:
-                    if urlparse.urlparse(endpoint)[4]:
-                        url = endpoint + '&' + params
-                    else:
-                        url = endpoint + '?' + params
+                    url = endpoint + (
+                        '&' if urlparse(endpoint)[4] else '?') + params
                     furl = requests.post(url)
                     response = furl.json() if furl.status_code == 200 else {}
                     kw.pop('code', '')

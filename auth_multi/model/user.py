@@ -46,6 +46,7 @@ class OauthTokens(models.Model):
                             help="Oauth Provider user_id")
     oauth_access_token = fields.Char('OAuth Access Token', readonly=True)
     user_id = fields.Many2one('res.users', 'Users',
+                              ondelete='cascade', index=True,
                               help='Reference Object')
 
     _sql_constraints = [('tokens_unique',
@@ -58,7 +59,7 @@ class ResUsers(models.Model):
     _inherit = 'res.users'
 
     @api.multi
-    def _search_my_contacs(self):
+    def _compute_my_contacs(self):
         partner_obj = self.env['res.partner']
         for user_brw in self:
             partner_id = user_brw.partner_id and user_brw.partner_id.id
@@ -71,8 +72,7 @@ class ResUsers(models.Model):
                                    help='Tokens that allow '
                                    'do login with many Oauth APIs')
     my_contacts = fields.One2many('res.partner',
-                                  compute='_search_my_contacs',
-                                  string='My Contacts',
+                                  compute='_compute_my_contacs',
                                   help='All my Contacts Partner')
 
     @api.multi
@@ -122,12 +122,12 @@ class ResUsers(models.Model):
         @param values: Dictionary with the user information to search or create
         return the user id found or created
         """
-        user_ids = self.search(['|',
+        user_brw = self.search(['|',
                                 ('login', '=', values.get('login')),
-                                ('email', '=', values.get('login'))])
-        if user_ids:
-            result = user_ids.check_token_exist(values)
-            user_brw = user_ids[0]
+                                ('email', '=', values.get('login'))],
+                               limit=1)
+        if user_brw:
+            result = user_brw.check_token_exist(values)
 
             if not result:
                 values.update({
@@ -142,9 +142,9 @@ class ResUsers(models.Model):
                     })
                 values.update({'login': user_brw.login})
                 user_brw.write(values)
-                return user_ids.ids[0]
+                return user_brw
 
-            return user_ids.ids[0]
+            return user_brw
 
         else:
             values.update({
@@ -174,42 +174,30 @@ class ResUsers(models.Model):
         """
 
         oauth_uid = validation['user_id']
-        token_obj = self.env['oauth.tokens']
-        token_ids = token_obj.\
+        token_brw = self.env['oauth.tokens'].\
             search([("oauth_uid", "=", oauth_uid),
-                    ('oauth_provider_id', '=', provider)])
+                    ('oauth_provider_id', '=', provider)],
+                   limit=1)
 
-        if not token_ids:
+        if not token_brw:
             if self._context and self._context.get('no_user_creation'):
                 return None
             state = simplejson.loads(params['state'])
+            print(params)
+            print(state)
             token = state.get('t')
-            oauth_uid = validation['user_id']
-            email = validation.get('email',
-                                   'provider_%s_user_%s'
-                                   % (provider, oauth_uid))
-            name = validation.get('name', email)
-            values = {
-                'name': name,
-                'login': email,
-                'email': email,
-                'oauth_provider_id': provider,
-                'oauth_uid': oauth_uid,
-                'oauth_access_token': params['access_token'],
-                'active': True,
-            }
+            values = self._generate_signup_values(provider, validation, params)
 
             try:
                 _, login, _ = self.signup(values, token)
-            except AccessDenied, access_denied_exception:
+                return login
+            except AccessDenied as access_denied_exception:
                 raise access_denied_exception
 
-        else:
-            token_brw = token_ids[0]
-            user = token_brw.user_id
-            login = user.login
+        user = token_brw.user_id
+        login = user.login
 
-            token_brw.write({'oauth_access_token': params['access_token']})
+        token_brw.write({'oauth_access_token': params['access_token']})
         return login
 
     @api.multi
@@ -218,12 +206,7 @@ class ResUsers(models.Model):
         """
         log_obj = self.env['user.log.groups']
 
-        group = False
-        for i in vals.keys():
-            if 'group' in i:
-                group = True
-                break
-
+        group = 'group_ids' in list(vals.keys())
         if group:
             for record in self:
                 groups = record.read(['groups_id'])
@@ -262,8 +245,7 @@ class UserLogGroups(models.Model):
 
     name = fields.Many2one('res.users', 'User',
                            help='Users with changes in their groups')
-    date = fields.Datetime('Date',
-                           help='Date of last change in the groups')
+    date = fields.Datetime(help='Date of last change in the groups')
     group_ids = fields.Many2many('res.groups',
                                  'log_groups_users_rel',
                                  'uid', 'gid',

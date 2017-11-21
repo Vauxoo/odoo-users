@@ -19,16 +19,15 @@
 #
 ##############################################################################
 {
-    'name': 'Github Auth',
-    'version': '10.0.0.1.0',
-    'license': 'AGPL-3',
+    'name': 'Github OAuth',
+    'version': '11.0.0.1.0',
+    'license': 'LGPL-3',
     'author': 'Vauxoo',
     'category': 'Hidden',
     'website': 'http://www.vauxoo.com',
     'images': [],
     'depends': [
         'auth_oauth',
-        'auth_signup',
         'secret_key_auth',
     ],
     'data': [
